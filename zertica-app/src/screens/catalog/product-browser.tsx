@@ -57,12 +57,12 @@ export function ProductBrowser({ mode, fixedCategory, initialCategoryId = null }
     <ScreenHeader
       title={title}
       subtitle={subtitle}
-      back={mode === 'category'}
+      back={mode !== 'catalog'}
       leading="logo"
       right={
         <>
           {mode === 'catalog' ? (
-            <HeaderIconButton emoji="🔍" label={t('common.search')} onPress={() => router.navigate('/search')} />
+            <HeaderIconButton emoji="🔍" label={t('common.search')} onPress={() => router.push('/search')} />
           ) : null}
           <HeaderIconButton
             icon="tune-variant"
@@ -70,7 +70,7 @@ export function ProductBrowser({ mode, fixedCategory, initialCategoryId = null }
             accent={showFilters || brandId !== null}
             onPress={() => setShowFilters((v) => !v)}
           />
-          {mode !== 'category' ? (
+          {mode === 'catalog' ? (
             <View accessibilityLabel={user?.fullName}>
               <Avatar name={user?.fullName ?? '?'} size={40} shape="rounded" />
             </View>

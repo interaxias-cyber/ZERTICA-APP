@@ -55,7 +55,7 @@ export function AdminUsersScreen() {
               onPress={() => router.push({ pathname: '/admin/users/[id]', params: { id: String(item.id) } })}
               accessibilityRole="button"
               accessibilityLabel={item.fullName}>
-              <Avatar name={item.fullName} size={52} tone={item.role === 'admin' ? 'navy' : 'orange'} />
+              <Avatar name={item.fullName} size={52} tone={item.role === 'user' ? 'orange' : 'navy'} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.name} numberOfLines={1}>
                   {item.fullName}
@@ -64,11 +64,18 @@ export function AdminUsersScreen() {
                   {item.email}
                 </Text>
                 <View style={styles.tags}>
-                  <Tag label={item.role === 'admin' ? t('profile.roleAdmin') : t('profile.roleUser')} tone={item.role === 'admin' ? 'info' : 'muted'} />
+                  <Tag
+                    label={item.role === 'admin' ? t('profile.roleAdmin') : item.role === 'company' ? t('adminHome.companyRole') : t('profile.roleUser')}
+                    tone={item.role === 'user' ? 'muted' : 'info'}
+                  />
                   <StatusBadge active={item.isActive} />
                 </View>
               </View>
-              <Icon name="chevron-right" size={22} color="#9CA3AF" />
+              {item.role !== 'admin' ? (
+                <Text style={styles.orders}>{item.ordersCount === 1 ? t('adminHome.ordersCountOne') : t('adminHome.ordersCount', { count: item.ordersCount ?? 0 })}</Text>
+              ) : (
+                <Icon name="chevron-right" size={22} color="#9CA3AF" />
+              )}
             </Pressable>
           )}
         />
@@ -93,4 +100,5 @@ const styles = StyleSheet.create({
   name: { fontSize: 16, fontWeight: font.bold, color: colors.text },
   meta: { fontSize: 13, color: colors.textMuted, marginTop: 2 },
   tags: { flexDirection: 'row', gap: 6, marginTop: 8 },
+  orders: { fontSize: 13, color: colors.orange, fontWeight: font.bold, textAlign: 'right', maxWidth: 70 },
 });

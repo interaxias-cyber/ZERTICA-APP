@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nProvider, useI18n } from '@/i18n';
 import { AuthProvider, useAuth } from '@/providers/auth-provider';
 import { QueryProvider } from '@/providers/query-provider';
+import { ToastProvider } from '@/providers/toast-provider';
 import { colors } from '@/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -26,12 +27,14 @@ function RootNavigator() {
   }, [ready]);
 
   // Lleva al usuario a la zona que le corresponde cuando cambia la sesión o el idioma.
-  const wasSignedIn = useRef(signedIn);
+  // Estado anterior: solo un inicio de sesión explícito (signedOut → signedIn) fuerza
+  // la pantalla de destino; restaurar la sesión al abrir la app respeta la ruta actual.
+  const prevStatus = useRef(status);
 
   useEffect(() => {
     if (!ready) return;
-    const justSignedIn = signedIn && !wasSignedIn.current;
-    wasSignedIn.current = signedIn;
+    const justSignedIn = signedIn && prevStatus.current === 'signedOut';
+    prevStatus.current = status;
     if (signedIn) {
       // Tras iniciar sesión: catálogo, o panel si se entró por el acceso administrativo.
       // Se difiere un ciclo para que la guarda de navegación termine su propia redirección.
@@ -45,7 +48,7 @@ function RootNavigator() {
     } else if (area !== '(auth)') {
       router.replace('/login');
     }
-  }, [ready, signedIn, hasChosenLanguage, area, landing]);
+  }, [ready, status, signedIn, hasChosenLanguage, area, landing]);
 
   if (!ready) return null;
 
@@ -73,8 +76,10 @@ export default function RootLayout() {
         <QueryProvider>
           <I18nProvider>
             <AuthProvider>
-              <StatusBar style="light" />
-              <RootNavigator />
+              <ToastProvider>
+                <StatusBar style="light" />
+                <RootNavigator />
+              </ToastProvider>
             </AuthProvider>
           </I18nProvider>
         </QueryProvider>

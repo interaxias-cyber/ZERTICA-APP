@@ -19,6 +19,7 @@ export function EditProfileScreen() {
   const { user, updateUser } = useAuth();
   const [fullName, setFullName] = useState(user?.fullName ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
+  const [phone, setPhone] = useState(user?.phone ?? '');
   const [errors, setErrors] = useState<FieldErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -31,12 +32,13 @@ export function EditProfileScreen() {
     else if (name.length < 3 || name.length > 120) e.fullName = t('validation.INVALID_LENGTH');
     if (!mail) e.email = t('validation.REQUIRED');
     else if (!EMAIL_RE.test(mail)) e.email = t('validation.INVALID_FORMAT');
+    if (phone.trim() && !/^\+?[0-9 ()-]{7,30}$/.test(phone.trim())) e.phone = t('validation.INVALID_FORMAT');
     setErrors(e);
     setServerError(null);
     if (Object.values(e).some(Boolean)) return;
     setSaving(true);
     try {
-      const updated = await profileApi.update({ fullName: name, email: mail });
+      const updated = await profileApi.update({ fullName: name, email: mail, phone: phone.trim() || null });
       await updateUser(updated);
       router.back();
     } catch (err) {
@@ -70,6 +72,14 @@ export function EditProfileScreen() {
           keyboardType="email-address"
           autoCapitalize="none"
           error={errors.email}
+        />
+        <TextField
+          label={t('profileMenu.phone')}
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+          placeholder="+57 300 123 4567"
+          error={errors.phone}
           onSubmitEditing={submit}
         />
         <Button title={t('profile.saveChanges')} onPress={submit} loading={saving} style={{ marginTop: 8 }} />

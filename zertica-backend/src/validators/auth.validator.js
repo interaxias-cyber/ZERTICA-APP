@@ -76,6 +76,11 @@ function validateProfileUpdate(body) {
     else if (email.length > 150 || !EMAIL_RE.test(email)) errors.add('email', 'INVALID_FORMAT');
     else out.email = email;
   }
+  if (body.phone !== undefined) {
+    const phone = str(body.phone);
+    if (phone && !/^\+?[0-9 ()-]{7,30}$/.test(phone)) errors.add('phone', 'INVALID_FORMAT');
+    else out.phone = phone || null;
+  }
   if (body.language !== undefined) {
     const language = str(body.language);
     if (!LANGUAGES.includes(language)) errors.add('language', 'INVALID_LANGUAGE');

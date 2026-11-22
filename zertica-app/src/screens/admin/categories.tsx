@@ -2,8 +2,7 @@ import { router } from 'expo-router';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { EmojiTile, categoryEmoji } from '@/components/emoji';
 import { Icon } from '@/components/icon';
-import { HeaderPill } from '@/components/screen-header';
-import { AdminHeader } from './admin-header';
+import { HeaderPill, ScreenHeader } from '@/components/screen-header';
 import { EmptyView, ErrorView, LoadingView } from '@/components/state-views';
 import { StatusBadge } from '@/components/status-badge';
 import { useAdminCategories } from '@/hooks/use-admin';
@@ -17,10 +16,11 @@ export function AdminCategoriesScreen() {
 
   return (
     <View style={styles.flex}>
-      <AdminHeader
+      <ScreenHeader
         title={t('admin.categories')}
         subtitle={query.data ? t('adminHome.categoriesSubtitle', { count: query.data.length }) : undefined}
-        actions={<HeaderPill label={t('adminHome.newCategoryShort')} onPress={() => router.push('/admin/categories/new')} />}
+        back
+        right={<HeaderPill label={t('adminHome.newCategoryShort')} onPress={() => router.push('/admin/categories/new')} />}
       />
       {query.isPending ? (
         <LoadingView />

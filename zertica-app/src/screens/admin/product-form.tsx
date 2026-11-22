@@ -65,6 +65,8 @@ function ProductForm({ initial }: { initial: AdminProduct | null }) {
   const [description, setDescription] = useState(initial?.description ?? '');
   const [categoryId, setCategoryId] = useState<number | null>(initial?.category.id ?? null);
   const [brandId, setBrandId] = useState<number | null>(initial?.brand.id ?? null);
+  const [price, setPrice] = useState(initial ? String(initial.price) : '');
+  const [stock, setStock] = useState(initial ? String(initial.stock) : '');
   const [image, setImage] = useState<PickedImage | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -112,6 +114,8 @@ function ProductForm({ initial }: { initial: AdminProduct | null }) {
     if (!categoryId) e.category_id = t('admin.selectCategory');
     if (!brandId) e.brand_id = t('admin.selectBrand');
     if (isNew && !image) e.image = t('admin.imageRequired');
+    if (!/^\d{1,9}(\.\d{1,2})?$/.test(price.trim())) e.price = price.trim() ? t('validation.INVALID_PRICE') : t('validation.REQUIRED');
+    if (!/^\d{1,9}$/.test(stock.trim())) e.stock = stock.trim() ? t('validation.INVALID_STOCK') : t('validation.REQUIRED');
     setErrors(e);
     setServerError(null);
     if (Object.values(e).some(Boolean)) return;
@@ -122,6 +126,8 @@ function ProductForm({ initial }: { initial: AdminProduct | null }) {
         description: description.trim(),
         categoryId: categoryId!,
         brandId: brandId!,
+        price: price.trim(),
+        stock: stock.trim(),
         image,
       });
       showMessage(isNew ? t('admin.created') : t('admin.updated'));
@@ -216,6 +222,15 @@ function ProductForm({ initial }: { initial: AdminProduct | null }) {
           maxLength={2000}
           error={errors.description}
         />
+
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flex: 1 }}>
+            <TextField label={t('adminForm.price')} value={price} onChangeText={edit('price', setPrice)} keyboardType="decimal-pad" placeholder="185.00" error={errors.price} testID="product-price" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <TextField label={t('adminForm.stock')} value={stock} onChangeText={edit('stock', setStock)} keyboardType="number-pad" placeholder="0" error={errors.stock} testID="product-stock" />
+          </View>
+        </View>
 
         <Text style={styles.label}>{t('common.category')}</Text>
         <View style={styles.chips}>

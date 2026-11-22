@@ -10,6 +10,9 @@ function toProductDto(req, row) {
     name: row.name,
     description: row.description,
     imageUrl: absoluteUrl(req, row.image_url),
+    // v2: precio y existencias (campos añadidos; el contrato original se conserva).
+    price: Number(row.price ?? 0),
+    stock: Number(row.stock ?? 0),
     category: { id: row.category_id, name: row.category_name },
     brand: { id: row.brand_id, name: row.brand_name },
   };
@@ -51,11 +54,14 @@ function toUserDto(row) {
     username: row.username,
     fullName: row.full_name,
     email: row.email,
+    phone: row.phone ?? null,
     role: row.role,
+    companyId: row.company_id ?? null,
     language: row.language,
     isActive: Boolean(row.is_active),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    ...(row.orders_count !== undefined ? { ordersCount: Number(row.orders_count) } : {}),
   };
 }
 

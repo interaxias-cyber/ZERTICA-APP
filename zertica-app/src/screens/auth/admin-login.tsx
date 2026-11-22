@@ -10,8 +10,12 @@ import { useAuth } from '@/providers/auth-provider';
 import { colors, font, radius } from '@/theme';
 import { AuthShell } from './auth-shell';
 
-/** Pantalla "Acceso administrativo" de Figma: solo cuentas con rol admin (RN06). */
-export function AdminLoginScreen() {
+/**
+ * Pantalla "Acceso administrativo" de Figma (solo rol admin, RN06).
+ * mode="company": mismo diseño para el portal Empresa (solo rol company).
+ */
+export function AdminLoginScreen({ mode = 'admin' }: { mode?: 'admin' | 'company' }) {
+  const company = mode === 'company';
   const { t, errorMessage } = useI18n();
   const { signIn } = useAuth();
   const [identifier, setIdentifier] = useState('');
@@ -30,7 +34,7 @@ export function AdminLoginScreen() {
     if (Object.keys(next).length) return;
     setLoading(true);
     try {
-      await signIn(identifier.trim(), password, { admin: true });
+      await signIn(identifier.trim(), password, { portal: mode });
     } catch (err) {
       setServerError(errorMessage(err));
     } finally {
@@ -39,11 +43,15 @@ export function AdminLoginScreen() {
   };
 
   return (
-    <AuthShell title={t('adminLogin.title')} subtitle={t('adminLogin.subtitle')} back badge={<RestrictedBadge />}>
+    <AuthShell
+      title={company ? t('companyLogin.title') : t('adminLogin.title')}
+      subtitle={company ? t('companyLogin.subtitle') : t('adminLogin.subtitle')}
+      back
+      badge={<RestrictedBadge company={company} />}>
       <Notice message={serverError} />
       <TextField
-        label={t('adminLogin.user')}
-        placeholder="admin@zertica.com"
+        label={company ? t('companyLogin.user') : t('adminLogin.user')}
+        placeholder={company ? 'xyz@empresa.com' : 'admin@zertica.com'}
         value={identifier}
         onChangeText={setIdentifier}
         autoCapitalize="none"
@@ -71,29 +79,36 @@ export function AdminLoginScreen() {
         <View style={styles.demo}>
           <Text style={styles.demoTitle}>{t('adminLogin.demoTitle')}</Text>
           <Text style={styles.mono}>
-            {t('adminLogin.demoUser')} admin@zertica.com{'\n'}
-            {t('adminLogin.demoPassword')} Admin2026#
+            {t('adminLogin.demoUser')} {company ? 'xyz@empresa.com' : 'admin@zertica.com'}
+            {'\n'}
+            {t('adminLogin.demoPassword')} {company ? 'Empresa2026#' : 'Admin2026#'}
           </Text>
         </View>
       ) : null}
-      <Button title={`🛡️  ${t('adminLogin.submit')}`} variant="secondary" onPress={submit} loading={loading} testID="admin-submit" />
+      <Button
+        title={company ? `🏢  ${t('companyLogin.submit')}` : `🛡️  ${t('adminLogin.submit')}`}
+        variant="secondary"
+        onPress={submit}
+        loading={loading}
+        testID="admin-submit"
+      />
       <Link href="/forgot-password" asChild>
         <Pressable style={styles.forgot} hitSlop={8} accessibilityRole="link">
-          <Text style={styles.link}>{t('adminLogin.forgot')}</Text>
+          <Text style={styles.link}>{company ? t('auth.forgot') : t('adminLogin.forgot')}</Text>
         </Pressable>
       </Link>
     </AuthShell>
   );
 }
 
-function RestrictedBadge() {
+function RestrictedBadge({ company }: { company: boolean }) {
   const { t } = useI18n();
   return (
     <View style={styles.badge}>
-      <Emoji char="🛡️" size={22} />
+      <Emoji char={company ? '🏢' : '🛡️'} size={22} />
       <View style={{ flex: 1 }}>
-        <Text style={styles.badgeTitle}>{t('adminLogin.badgeTitle')}</Text>
-        <Text style={styles.badgeSub}>{t('adminLogin.badgeSubtitle')}</Text>
+        <Text style={styles.badgeTitle}>{company ? t('companyLogin.badgeTitle') : t('adminLogin.badgeTitle')}</Text>
+        <Text style={styles.badgeSub}>{company ? t('companyLogin.badgeSubtitle') : t('adminLogin.badgeSubtitle')}</Text>
       </View>
     </View>
   );

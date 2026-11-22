@@ -5,7 +5,7 @@ import type { AdminProduct, StatusFilter } from '@/api/types';
 import { StatusChips } from '@/components/filter-chips';
 import { IconAction } from '@/components/icon-action';
 import { ProductImage } from '@/components/product-image';
-import { HeaderPill } from '@/components/screen-header';
+import { HeaderIconButton, HeaderPill } from '@/components/screen-header';
 import { SearchInput } from '@/components/search-input';
 import { EmptyView, ErrorView, LoadingView } from '@/components/state-views';
 import { StatusBadge, Tag } from '@/components/status-badge';
@@ -13,12 +13,13 @@ import { useAdminProducts, useAdminSummary, useProductStatus } from '@/hooks/use
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useI18n } from '@/i18n';
 import { confirmAction, showMessage } from '@/lib/confirm';
+import { money } from '@/lib/format';
 import { colors, font, radius, shadow } from '@/theme';
 import { AdminHeader } from './admin-header';
 
 /** Pantalla "Productos" del panel (Figma). CU-16 listado, CU-19 desactivar, CU-20 reactivar. */
 export function AdminProductsScreen() {
-  const { t, errorMessage } = useI18n();
+  const { t, language, errorMessage } = useI18n();
   const [searchText, setSearchText] = useState('');
   const [status, setStatus] = useState<StatusFilter>('all');
   const search = useDebouncedValue(searchText.trim(), 400);
@@ -56,7 +57,12 @@ export function AdminProductsScreen() {
       <AdminHeader
         title={t('admin.products')}
         subtitle={summary.data ? t('adminHome.productsSubtitle', { count: summary.data.products.active }) : undefined}
-        actions={<HeaderPill label={t('adminHome.newShort')} onPress={openNew} />}
+        actions={
+          <>
+            <HeaderIconButton emoji="🗂️" label={t('admin.categories')} onPress={() => router.push('/admin/categories')} />
+            <HeaderPill label={t('adminHome.newShort')} onPress={openNew} />
+          </>
+        }
       />
       <View style={styles.controls}>
         <SearchInput value={searchText} onChangeText={setSearchText} placeholder={t('admin.searchProducts')} />
@@ -85,7 +91,10 @@ export function AdminProductsScreen() {
                   {item.name}
                 </Text>
                 <Text style={styles.meta} numberOfLines={1}>
-                  {item.category.name} · {item.reference}
+                  {item.category.name} · {t('cart.stock', { count: item.stock })}
+                </Text>
+                <Text style={styles.ref} numberOfLines={1}>
+                  {item.reference}
                 </Text>
                 {!item.category.isActive ? (
                   <View style={{ marginTop: 4 }}>
@@ -94,6 +103,7 @@ export function AdminProductsScreen() {
                 ) : null}
               </View>
               <View style={styles.side}>
+                <Text style={styles.price}>{money(item.price, language)}</Text>
                 <StatusBadge active={item.isActive} />
                 <View style={styles.actions}>
                   <IconAction
@@ -141,6 +151,8 @@ const styles = StyleSheet.create({
   rowBody: { flex: 1 },
   name: { fontSize: 16, fontWeight: font.bold, color: colors.text },
   meta: { fontSize: 13, color: colors.textMuted, marginTop: 2 },
-  side: { alignItems: 'flex-end', gap: 8 },
+  side: { alignItems: 'flex-end', gap: 6 },
+  price: { fontSize: 17, fontWeight: font.heavy, color: colors.orange },
+  ref: { fontSize: 12, color: colors.orangeDark, fontWeight: font.bold, marginTop: 2 },
   actions: { flexDirection: 'row', gap: 6 },
 });

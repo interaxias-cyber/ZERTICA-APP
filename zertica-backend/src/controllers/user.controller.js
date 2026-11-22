@@ -8,8 +8,8 @@ const userService = require('../services/user.service');
 module.exports = {
   async list(req, res) {
     const { role, status } = req.query;
-    if (role !== undefined && role !== '' && !['user', 'admin'].includes(role)) {
-      throw ApiError.badRequest('INVALID_PARAMETER', 'El parámetro "role" debe ser user o admin.', { field: 'role' });
+    if (role !== undefined && role !== '' && !['user', 'admin', 'company'].includes(role)) {
+      throw ApiError.badRequest('INVALID_PARAMETER', 'El parámetro "role" debe ser user, admin o company.', { field: 'role' });
     }
     if (status !== undefined && status !== '' && !['all', 'active', 'inactive'].includes(status)) {
       throw ApiError.badRequest('INVALID_PARAMETER', 'El parámetro "status" debe ser all, active o inactive.', { field: 'status' });

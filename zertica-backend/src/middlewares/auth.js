@@ -30,7 +30,7 @@ async function authenticate(req, res, next) {
     if (!user.is_active) {
       throw ApiError.forbidden('ACCOUNT_DISABLED', 'La cuenta está desactivada. Contacte al administrador.');
     }
-    req.user = { id: user.id, role: user.role, username: user.username, language: user.language };
+    req.user = { id: user.id, role: user.role, username: user.username, language: user.language, companyId: user.company_id };
     next();
   } catch (err) {
     next(err);

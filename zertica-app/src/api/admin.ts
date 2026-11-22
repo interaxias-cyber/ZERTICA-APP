@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 import { PAGE_SIZE } from '@/config/env';
-import { request } from './client';
-import type { AdminCategory, AdminProduct, Paginated, Role, StatusFilter, User } from './types';
+import { request, requestText } from './client';
+import type { AdminCategory, AdminProduct, Order, OrderStatus, Paginated, Role, SalesReport, StatusFilter, User } from './types';
 
 export interface PickedImage {
   uri: string;
@@ -15,6 +15,8 @@ export interface ProductInput {
   description?: string;
   categoryId?: number;
   brandId?: number;
+  price?: string;
+  stock?: string;
   image?: PickedImage | null;
 }
 
@@ -25,6 +27,8 @@ async function toFormData(input: ProductInput): Promise<FormData> {
   if (input.description !== undefined) form.append('description', input.description);
   if (input.categoryId !== undefined) form.append('category_id', String(input.categoryId));
   if (input.brandId !== undefined) form.append('brand_id', String(input.brandId));
+  if (input.price !== undefined) form.append('price', input.price);
+  if (input.stock !== undefined) form.append('stock', input.stock);
   if (input.image) {
     const type = input.image.mimeType || 'image/jpeg';
     const ext = type.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg';
@@ -48,6 +52,11 @@ export interface AdminProductQuery {
 }
 
 export interface AdminSummary {
+  sales: { today: number; yesterday: number; changePercent: number | null; ordersToday: number };
+  orders: { active: number };
+  weekSales: { day: string; weekday: number; total: number }[];
+  latestOrders: { id: number; code: string; status: OrderStatus; total: number; createdAt: string; customer: string }[];
+  topProducts: { productId: number; name: string; units: number; total: number }[];
   products: { total: number; active: number; inactive: number; withoutImage: number };
   categories: { total: number; active: number; inactive: number };
   brands: { total: number };
@@ -85,6 +94,13 @@ export const adminApi = {
   users: ({ search, status = 'all', role, page = 1 }: { search?: string; status?: StatusFilter; role?: Role; page?: number }) =>
     request<Paginated<User>>('/admin/users', { query: { search: search?.trim(), status, role, page, limit: PAGE_SIZE } }),
   user: (id: number) => request<{ data: User }>(`/admin/users/${id}`).then((r) => r.data),
+  orders: ({ status = 'all', search, page = 1 }: { status?: OrderStatus | 'all' | 'active'; search?: string; page?: number }) =>
+    request<Paginated<Order>>('/admin/orders', { query: { status, search: search?.trim(), page, limit: PAGE_SIZE } }),
+  order: (id: number) => request<{ data: Order }>(`/admin/orders/${id}`).then((r) => r.data),
+  setOrderStatus: (id: number, status: OrderStatus) =>
+    request<{ data: Order }>(`/admin/orders/${id}/status`, { method: 'PATCH', body: { status } }).then((r) => r.data),
+  report: (month: string) => request<{ data: SalesReport }>('/admin/reports', { query: { month } }).then((r) => r.data),
+  reportCsv: (month: string) => requestText('/admin/reports/export.csv', { month }),
   setUserStatus: (id: number, isActive: boolean) =>
     request<{ data: User }>(`/admin/users/${id}/status`, { method: 'PATCH', body: { isActive } }).then((r) => r.data),
 };

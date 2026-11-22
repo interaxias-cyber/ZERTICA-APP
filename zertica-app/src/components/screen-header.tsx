@@ -21,12 +21,14 @@ interface Props {
   back?: boolean;
   /** Elemento a la izquierda del título, como en Figma: logotipo o inicial del administrador. */
   leading?: 'logo' | 'admin' | 'none';
+  /** Elemento propio a la izquierda (tiene prioridad sobre `leading`). */
+  leadingNode?: ReactNode;
   right?: ReactNode;
   children?: ReactNode;
 }
 
 /** Encabezado azul marino de las pantallas de Figma. */
-export function ScreenHeader({ title, subtitle, back, leading = 'none', right, children }: Props) {
+export function ScreenHeader({ title, subtitle, back, leading = 'none', leadingNode, right, children }: Props) {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   return (
@@ -36,6 +38,8 @@ export function ScreenHeader({ title, subtitle, back, leading = 'none', right, c
           <Pressable onPress={goBack} style={styles.iconBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel="back">
             <Icon name="arrow-left" size={22} color={colors.white} />
           </Pressable>
+        ) : leadingNode ? (
+          leadingNode
         ) : leading === 'logo' ? (
           <Logo size={40} />
         ) : leading === 'admin' ? (
@@ -114,14 +118,14 @@ export function HeaderIconButton({
 }
 
 /** Botón naranja tipo pastilla ("+ Nuevo"). */
-export function HeaderPill({ label, onPress }: { label: string; onPress: () => void }) {
+export function HeaderPill({ label, onPress, plain }: { label: string; onPress: () => void; plain?: boolean }) {
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
       style={({ pressed }) => [styles.pill, pressed && { opacity: 0.8 }]}>
-      <Text style={styles.pillText}>+ {label}</Text>
+      <Text style={styles.pillText}>{plain ? label : `+ ${label}`}</Text>
     </Pressable>
   );
 }

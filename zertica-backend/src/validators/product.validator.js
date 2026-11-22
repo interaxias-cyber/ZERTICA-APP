@@ -65,6 +65,22 @@ function validateProductBody(body, { partial = false } = {}) {
     else out[key] = Number(raw);
   }
 
+  // v2: precio (≥ 0, 2 decimales) y existencias (entero ≥ 0).
+  if (!(partial && body.price === undefined)) {
+    const raw = str(body.price);
+    if (raw === '') {
+      if (!partial) out.price = 0;
+    } else if (!/^\d{1,9}(\.\d{1,2})?$/.test(raw)) errors.add('price', 'INVALID_PRICE');
+    else out.price = Number(raw);
+  }
+  if (!(partial && body.stock === undefined)) {
+    const raw = str(body.stock);
+    if (raw === '') {
+      if (!partial) out.stock = 0;
+    } else if (!/^\d{1,9}$/.test(raw)) errors.add('stock', 'INVALID_STOCK');
+    else out.stock = Number(raw);
+  }
+
   errors.throwIfAny();
   return out;
 }

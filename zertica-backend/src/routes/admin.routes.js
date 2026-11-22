@@ -30,4 +30,25 @@ router.get('/users', h(users.list));
 router.get('/users/:id', h(users.detail));
 router.patch('/users/:id/status', h(users.setStatus));
 
+// v2 · Pedidos (pantalla "Pedidos" del panel) y reportes de ventas.
+const orders = require('../services/order.service');
+const reports = require('../services/report.service');
+const { parsePagination, parseSearch } = require('../validators/common');
+const { validateId } = require('../validators/product.validator');
+const { validateOrderStatus, validateMonth } = require('../validators/commerce.validator');
+const { parseOrderStatus } = require('./commerce.routes');
+
+router.get('/orders', h(async (req, res) =>
+  res.json(await orders.list({ status: parseOrderStatus(req.query.status), search: parseSearch(req.query.search), ...parsePagination(req.query) }))));
+router.get('/orders/:id', h(async (req, res) => res.json(await orders.getById(validateId(req.params.id)))));
+router.patch('/orders/:id/status', h(async (req, res) =>
+  res.json(await orders.applyStatus(validateId(req.params.id), validateOrderStatus(req.body || {}), { admin: true }))));
+router.get('/reports', h(async (req, res) => res.json(await reports.monthly(validateMonth(req.query.month)))));
+router.get('/reports/export.csv', h(async (req, res) => {
+  const month = validateMonth(req.query.month);
+  res.set('Content-Type', 'text/csv; charset=utf-8');
+  res.set('Content-Disposition', `attachment; filename="zertica-ventas-${month}.csv"`);
+  res.send(await reports.csv(month));
+}));
+
 module.exports = router;

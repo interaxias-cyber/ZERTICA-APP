@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi, type AdminProductQuery, type ProductInput } from '@/api/admin';
-import type { StatusFilter } from '@/api/types';
+import type { OrderStatus, StatusFilter } from '@/api/types';
 
 export const adminKeys = {
   summary: ['admin', 'summary'] as const,
@@ -99,4 +99,29 @@ export function useUserStatus() {
 
 export function useAdminSummary() {
   return useQuery({ queryKey: adminKeys.summary, queryFn: adminApi.summary });
+}
+
+export function useAdminOrders(q: { status: OrderStatus | 'all' | 'active'; search?: string }) {
+  return useInfiniteQuery({
+    queryKey: ['admin', 'orders', q],
+    queryFn: ({ pageParam }) => adminApi.orders({ ...q, page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (last) => (last.meta.page < last.meta.totalPages ? last.meta.page + 1 : undefined),
+  });
+}
+
+export function useAdminOrder(id: number) {
+  return useQuery({ queryKey: ['admin', 'order', id], queryFn: () => adminApi.order(id), enabled: id > 0 });
+}
+
+export function useOrderStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: number; status: OrderStatus }) => adminApi.setOrderStatus(id, status),
+    onSuccess: () => Promise.all([qc.invalidateQueries({ queryKey: ['admin'] }), qc.invalidateQueries({ queryKey: ['products'] })]),
+  });
+}
+
+export function useSalesReport(month: string) {
+  return useQuery({ queryKey: ['admin', 'report', month], queryFn: () => adminApi.report(month) });
 }

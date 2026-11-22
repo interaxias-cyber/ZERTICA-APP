@@ -27,7 +27,7 @@ export const authApi = {
 
 export const profileApi = {
   me: () => request<{ data: User }>('/me').then((r) => r.data),
-  update: (input: Partial<Pick<User, 'fullName' | 'email' | 'language'>>) =>
+  update: (input: Partial<Pick<User, 'fullName' | 'email' | 'language' | 'phone'>>) =>
     request<{ data: User }>('/me', { method: 'PATCH', body: input }).then((r) => r.data),
   changePassword: (currentPassword: string, newPassword: string) =>
     request<{ message: string }>('/me/password', { method: 'PUT', body: { currentPassword, newPassword } }),

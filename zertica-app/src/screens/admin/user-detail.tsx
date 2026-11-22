@@ -58,7 +58,7 @@ export function UserDetailScreen({ id }: { id: number }) {
               <Text style={styles.username}>@{user.username}</Text>
               <View style={{ flexDirection: 'row', gap: 6 }}>
                 <StatusBadge active={user.isActive} />
-                <Tag label={user.role === 'admin' ? t('profile.roleAdmin') : t('profile.roleUser')} tone={user.role === 'admin' ? 'info' : 'muted'} />
+                <Tag label={user.role === 'admin' ? t('profile.roleAdmin') : user.role === 'company' ? t('adminHome.companyRole') : t('profile.roleUser')} tone={user.role === 'user' ? 'muted' : 'info'} />
               </View>
             </View>
           </View>

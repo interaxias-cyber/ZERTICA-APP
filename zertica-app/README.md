@@ -26,10 +26,13 @@ src/
     _layout.tsx        Proveedores + guardas: idioma → acceso → app
     language.tsx       Selección de idioma inicial
     (auth)/            login, admin-login, register, forgot-password, reset-password
-    (app)/(tabs)/      Inicio, Catálogo, Buscar, Perfil (barra inferior)
+    (app)/(tabs)/      Inicio, Catálogo, Carrito, Pedidos, Perfil (barra inferior)
+    (app)/checkout     Finalizar compra (carrito o pedido masivo)
+    (app)/orders/[id]  Detalle de pedido · addresses/ · payment-methods · help · terms/
+    (app)/company/     Portal Empresa: Empresa, Masivo, Facturas, Contacto, Cuenta (solo rol company)
     (app)/product/[id] Detalle de producto
     (app)/category/[id] Productos de una categoría
-    (app)/admin/(tabs) Panel: Resumen, Productos, Categorías, Usuarios, Mi cuenta (solo admin)
+    (app)/admin/(tabs) Panel: Dashboard, Productos, Pedidos, Usuarios, Reportes, Mi cuenta (solo admin)
     (app)/admin/…/[id] Formularios de producto y categoría, detalle de usuario
   screens/             Cuerpo de cada pantalla
   components/          Botones, campos, tarjetas, chips, estados vacíos/error…
@@ -37,7 +40,8 @@ src/
   hooks/               React Query: catálogo y administración
   providers/           Sesión (AuthProvider) y caché (React Query)
   i18n/                Español e inglés; traduce los códigos de error de la API
-  lib/                 Almacenamiento seguro, validaciones, confirmaciones
+  lib/                 Almacenamiento seguro, validaciones, formato de moneda/fechas, PDF y CSV (documents.ts)
+  content/             Textos de Ayuda (FAQ) y Términos
   config/env.ts        Resolución de la URL del backend
   theme.ts             Colores, tipografía, radios y sombras de la marca
 ```

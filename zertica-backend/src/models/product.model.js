@@ -42,7 +42,7 @@ function buildFilters({ search, categoryId, brandId, status }, scope = 'catalog'
 }
 
 const SELECT_COLUMNS = `
-  p.id, p.reference, p.name, p.description, p.image_url, p.is_active,
+  p.id, p.reference, p.name, p.description, p.image_url, p.price, p.stock, p.is_active,
   p.created_at, p.updated_at,
   c.id AS category_id, c.name AS category_name, c.is_active AS category_is_active,
   b.id AS brand_id, b.name AS brand_name`;
@@ -85,11 +85,11 @@ async function findByReference(reference) {
   return rows[0] || null;
 }
 
-async function create({ reference, name, description, imageUrl, categoryId, brandId }) {
+async function create({ reference, name, description, imageUrl, categoryId, brandId, price = 0, stock = 0 }) {
   const [result] = await pool.query(
-    `INSERT INTO products (reference, name, description, image_url, category_id, brand_id, is_active)
-     VALUES (?, ?, ?, ?, ?, ?, 1)`,
-    [reference, name, description ?? null, imageUrl, categoryId, brandId],
+    `INSERT INTO products (reference, name, description, image_url, category_id, brand_id, price, stock, is_active)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+    [reference, name, description ?? null, imageUrl, categoryId, brandId, price, stock],
   );
   return result.insertId;
 }
@@ -102,6 +102,8 @@ async function update(id, data) {
     imageUrl: 'image_url',
     categoryId: 'category_id',
     brandId: 'brand_id',
+    price: 'price',
+    stock: 'stock',
   };
   const sets = [];
   const params = [];

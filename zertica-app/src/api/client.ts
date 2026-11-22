@@ -106,3 +106,24 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   }
   return payload as T;
 }
+
+/** Descarga texto (p. ej. CSV) con el token de sesión. */
+export async function requestText(path: string, query?: Query): Promise<string> {
+  const headers: Record<string, string> = {};
+  if (authToken) headers.Authorization = `Bearer ${authToken}`;
+  let res: Response;
+  try {
+    res = await fetch(buildUrl(path, query), { headers });
+  } catch {
+    throw new ApiError(0, 'NETWORK_ERROR', 'Network error');
+  }
+  const text = await res.text();
+  if (!res.ok) {
+    let code = 'UNKNOWN_ERROR';
+    try {
+      code = JSON.parse(text)?.error?.code ?? code;
+    } catch {}
+    throw new ApiError(res.status, code, `HTTP ${res.status}`);
+  }
+  return text;
+}

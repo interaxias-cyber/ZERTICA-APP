@@ -133,7 +133,7 @@ test('CU-09..CU-13 catálogo: contrato, búsqueda, filtros, paginación', async 
   assert.equal(r.body.meta.total, 6);
   assert.deepEqual(r.body.meta, { page: 1, limit: 20, total: 6, totalPages: 1 });
   const p = r.body.data[0];
-  assert.deepEqual(Object.keys(p).sort(), ['brand', 'category', 'description', 'id', 'imageUrl', 'name', 'reference']);
+  assert.deepEqual(Object.keys(p).sort(), ['brand', 'category', 'description', 'id', 'imageUrl', 'name', 'price', 'reference', 'stock']);
 
   // Ejemplo de la presentación: search=PLC&category_id=1 → total 2
   r = await api('GET', '/products?search=PLC&category_id=1&page=1&limit=20', { token: tokens.user });

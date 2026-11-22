@@ -38,7 +38,10 @@ tests/                       Pruebas de integración (node:test)
 
 ## Base de datos
 
-Cinco tablas, sin tablas adicionales: `users`, `categories`, `brands`, `products`, `product_features`. Claves foráneas `products → categories / brands` (`ON DELETE RESTRICT`, `ON UPDATE CASCADE`) y `product_features → products` (`ON DELETE CASCADE`). Restricciones `UNIQUE` en usuario, correo, referencia, nombre de categoría, nombre de marca y (producto, característica). Índices por categoría/marca + estado, rol + estado y `FULLTEXT (name, description)`.
+**MVP (5 tablas):** `users`, `categories`, `brands`, `products`, `product_features`.
+**Ampliación v2 (9 tablas):** `companies`, `addresses`, `payment_methods`, `cart_items`, `orders`, `order_items`, `invoices`, `account_contacts`, `support_messages`; además `products.price`, `products.stock`, `users.company_id`, `users.phone` y el rol `company`.
+
+MVP: Claves foráneas `products → categories / brands` (`ON DELETE RESTRICT`, `ON UPDATE CASCADE`) y `product_features → products` (`ON DELETE CASCADE`). Restricciones `UNIQUE` en usuario, correo, referencia, nombre de categoría, nombre de marca y (producto, característica). Índices por categoría/marca + estado, rol + estado y `FULLTEXT (name, description)`.
 
 ## Autenticación
 
@@ -87,6 +90,23 @@ Errores: `{ "error": { "code": "…", "message": "…", "details": [ { "field", 
 | `GET /api/admin/users` | Query: `page`, `limit`, `search`, `role`, `status`. |
 | `GET /api/admin/users/:id` | Detalle sin hash. |
 | `PATCH /api/admin/users/:id/status` | `{ isActive }`. `400 CANNOT_DEACTIVATE_SELF`. |
+
+## Endpoints de la ampliación v2
+
+| Ruta | Rol | Descripción |
+| --- | --- | --- |
+| `GET /api/cart` · `POST /api/cart/items {productId, quantity}` · `PATCH /api/cart/items/:productId {quantity}` · `DELETE /api/cart/items/:productId` · `DELETE /api/cart` | user, company | Carrito con totales (descuento por volumen solo para empresa). `409 INSUFFICIENT_STOCK` |
+| `POST /api/orders {addressId, paymentType: card\|transfer\|credit, paymentMethodId?, notes?}` | user, company | Compra desde el carrito (transacción: bloquea productos, valida stock, descuenta stock, factura de empresa) |
+| `POST /api/orders/bulk {…, items: [{productId, quantity}]}` | company | Pedido masivo |
+| `GET /api/orders?status=all\|active\|pending…` · `GET /api/orders/:id` · `GET /api/orders/stats` · `POST /api/orders/:id/cancel` | user, company | Mis pedidos; cancelar repone stock y anula la factura pendiente |
+| `GET/POST/PUT/DELETE /api/addresses` | sesión | Direcciones (máx. 10, una principal) |
+| `GET/POST/DELETE /api/payment-methods` | sesión | Tarjetas `{number, expiry: "MM/AA", cvv, holderName}`; se guarda marca + últimos 4 |
+| `GET/POST /api/support/messages` | sesión | Ayuda y soporte |
+| `GET /api/company` · `GET /api/company/invoices?status=` · `GET /api/company/invoices/:id` · `POST /api/company/invoices/:id/pay` · `GET /api/company/contacts` · `GET /api/company/users` · `GET /api/company/orders` | company | Portal Empresa (pago simulado) |
+| `GET /api/admin/orders?status=&search=` · `GET /api/admin/orders/:id` · `PATCH /api/admin/orders/:id/status {status}` | admin | Transiciones: pendiente→en proceso/cancelado, en proceso→enviado/cancelado, enviado→completado |
+| `GET /api/admin/reports?month=AAAA-MM` · `GET /api/admin/reports/export.csv?month=` | admin | Reporte mensual y CSV (`;`, UTF-8 con BOM, abre en Excel) |
+
+Nuevos códigos de error: `INSUFFICIENT_STOCK`, `PRODUCT_UNAVAILABLE`, `CART_EMPTY`, `CREDIT_LIMIT_EXCEEDED`, `ORDER_NOT_FOUND`, `INVALID_STATUS_TRANSITION`, `ADDRESS_NOT_FOUND`, `PAYMENT_METHOD_NOT_FOUND`, `PAYMENT_METHOD_EXISTS`, `INVOICE_NOT_PAYABLE`, `INVALID_CARD`, `CARD_EXPIRED`.
 
 ## Variables de entorno
 

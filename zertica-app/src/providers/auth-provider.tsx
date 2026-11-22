@@ -7,6 +7,9 @@ import { useI18n } from '@/i18n';
 import { storage, STORAGE_KEYS } from '@/lib/storage';
 
 type Status = 'loading' | 'signedOut' | 'signedIn';
+type Landing = '/' | '/admin' | '/company';
+
+const landingFor = (role: User['role']): Landing => (role === 'admin' ? '/admin' : role === 'company' ? '/company' : '/');
 
 interface AuthValue {
   status: Status;
@@ -15,10 +18,10 @@ interface AuthValue {
   /** Código del motivo por el que se cerró la sesión (vencida, cuenta desactivada…). */
   sessionNotice: string | null;
   clearSessionNotice: () => void;
-  /** admin = true: acceso administrativo; rechaza cuentas sin rol admin. */
-  signIn: (identifier: string, password: string, options?: { admin?: boolean }) => Promise<void>;
-  /** Zona a la que entra tras iniciar sesión (/admin para el acceso administrativo). */
-  landing: '/' | '/admin';
+  /** portal: acceso administrativo o empresarial; rechaza cuentas de otro rol. */
+  signIn: (identifier: string, password: string, options?: { portal?: 'admin' | 'company' }) => Promise<void>;
+  /** Zona a la que entra tras iniciar sesión. */
+  landing: Landing;
   register: (input: Omit<RegisterInput, 'language'>) => Promise<void>;
   signOut: () => Promise<void>;
   updateUser: (user: User) => Promise<void>;
@@ -33,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<Status>('loading');
   const [user, setUser] = useState<User | null>(null);
   const [sessionNotice, setSessionNotice] = useState<string | null>(null);
-  const [landing, setLanding] = useState<'/' | '/admin'>('/');
+  const [landing, setLanding] = useState<Landing>('/');
   const signingOut = useRef(false);
 
   const clearLocalSession = useCallback(async () => {
@@ -72,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const cached: User = JSON.parse(rawUser);
         setUser(cached);
-        setLanding(cached.role === 'admin' ? '/admin' : '/');
+        setLanding(landingFor(cached.role));
         setStatus('signedIn');
       } catch {
         await clearLocalSession();
@@ -107,12 +110,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clearLocalSession]);
 
   const signIn = useCallback(
-    async (identifier: string, password: string, options?: { admin?: boolean }) => {
+    async (identifier: string, password: string, options?: { portal?: 'admin' | 'company' }) => {
       const session = await authApi.login(identifier, password);
-      if (options?.admin && session.user.role !== 'admin') {
+      if (options?.portal === 'admin' && session.user.role !== 'admin') {
         throw new ApiError(403, 'NOT_ADMIN', 'Not an administrator');
       }
-      setLanding(options?.admin ? '/admin' : '/');
+      if (options?.portal === 'company' && session.user.role !== 'company') {
+        throw new ApiError(403, 'NOT_COMPANY', 'Not a company account');
+      }
+      // Empresa siempre entra a su portal; admin al panel solo por el acceso administrativo.
+      setLanding(session.user.role === 'company' ? '/company' : options?.portal === 'admin' ? '/admin' : '/');
       await persistSession(session);
     },
     [persistSession],

@@ -6,15 +6,20 @@ import { MenuCard, StatsCard } from '@/components/menu-card';
 import { ProfileHero } from '@/components/profile-hero';
 import { HeaderIconButton } from '@/components/screen-header';
 import { StatusBadge, Tag } from '@/components/status-badge';
+import { useAddresses, useOrderStats } from '@/hooks/use-commerce';
 import { useI18n } from '@/i18n';
+import { money } from '@/lib/format';
 import { confirmAction } from '@/lib/confirm';
 import { useAuth } from '@/providers/auth-provider';
 import { colors } from '@/theme';
 
 /** CU-06 Consultar perfil — pantalla "Mi Perfil" de Figma. Acceso a CU-07, CU-08, idioma y CU-05. */
 export function ProfileScreen() {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const { user, isAdmin, signOut } = useAuth();
+  const canBuy = user?.role === 'user' || user?.role === 'company';
+  const stats = useOrderStats(canBuy);
+  const addresses = useAddresses();
   const [signingOut, setSigningOut] = useState(false);
 
   if (!user) return null;
@@ -43,11 +48,19 @@ export function ProfileScreen() {
         }
       />
       <StatsCard
-        items={[
-          { value: `@${user.username}`, label: t('profile.username') },
-          { value: user.language.toUpperCase(), label: t('profile.statLanguage') },
-          { value: String(new Date(user.createdAt).getFullYear()), label: t('profile.statSince') },
-        ]}
+        items={
+          canBuy
+            ? [
+                { value: String(stats.data?.orders ?? '—'), label: t('profileMenu.orders') },
+                { value: stats.data ? money(stats.data.spent, language) : '—', label: t('profileMenu.spent') },
+                { value: String(addresses.data?.length ?? '—'), label: t('profileMenu.addressesShort') },
+              ]
+            : [
+                { value: `@${user.username}`, label: t('profile.username') },
+                { value: user.language.toUpperCase(), label: t('profile.statLanguage') },
+                { value: String(new Date(user.createdAt).getFullYear()), label: t('profile.statSince') },
+              ]
+        }
       />
       <View style={styles.body}>
         <MenuCard
@@ -57,6 +70,13 @@ export function ProfileScreen() {
           onPress={() => router.push('/profile-edit')}
           testID="profile-edit"
         />
+        <MenuCard
+          emoji="🏠"
+          title={t('profileMenu.addresses')}
+          subtitle={t('addresses.count', { count: addresses.data?.length ?? 0 })}
+          onPress={() => router.push('/addresses')}
+        />
+        <MenuCard emoji="💳" title={t('profileMenu.payments')} subtitle={t('payments.title')} onPress={() => router.push('/payment-methods')} />
         <MenuCard
           emoji="🔒"
           title={t('profile.security')}
@@ -69,6 +89,8 @@ export function ProfileScreen() {
           subtitle={user.language === 'es' ? 'Español' : 'English'}
           onPress={() => router.push('/language-settings')}
         />
+        <MenuCard emoji="❓" title={t('profileMenu.help')} subtitle={t('profileMenu.helpSub')} onPress={() => router.push('/help')} />
+        <MenuCard emoji="📜" title={t('profileMenu.terms')} subtitle={t('profileMenu.termsSub')} onPress={() => router.push('/terms')} />
         {isAdmin ? (
           <MenuCard emoji="🛡️" title={t('home.adminPanel')} subtitle={t('profile.adminPanelSub')} onPress={() => router.navigate('/admin')} />
         ) : null}

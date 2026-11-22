@@ -3,7 +3,7 @@
 const { pool } = require('../config/db');
 const { escapeLike } = require('./product.model');
 
-const PUBLIC_COLUMNS = 'id, username, full_name, email, role, language, is_active, created_at, updated_at';
+const PUBLIC_COLUMNS = 'id, username, full_name, email, phone, role, company_id, language, is_active, created_at, updated_at';
 
 async function findById(id) {
   const [rows] = await pool.query(`SELECT ${PUBLIC_COLUMNS} FROM users WHERE id = ?`, [id]);
@@ -62,9 +62,10 @@ async function create({ username, fullName, email, passwordHash, language }) {
   return result.insertId;
 }
 
-async function updateProfile(id, { fullName, email, language }) {
+async function updateProfile(id, { fullName, email, language, phone }) {
   const sets = [];
   const params = [];
+  if (phone !== undefined) { sets.push('phone = ?'); params.push(phone); }
   if (fullName !== undefined) { sets.push('full_name = ?'); params.push(fullName); }
   if (email !== undefined) { sets.push('email = ?'); params.push(email); }
   if (language !== undefined) { sets.push('language = ?'); params.push(language); }
@@ -97,7 +98,8 @@ function buildFilters({ search, role, status }) {
 async function findAll(filters, { limit, offset }) {
   const { where, params } = buildFilters(filters);
   const [rows] = await pool.query(
-    `SELECT ${PUBLIC_COLUMNS} FROM users ${where} ORDER BY username ASC LIMIT ? OFFSET ?`,
+    `SELECT ${PUBLIC_COLUMNS}, (SELECT COUNT(*) FROM orders o WHERE o.user_id = users.id) AS orders_count
+     FROM users ${where} ORDER BY username ASC LIMIT ? OFFSET ?`,
     [...params, limit, offset],
   );
   return rows;

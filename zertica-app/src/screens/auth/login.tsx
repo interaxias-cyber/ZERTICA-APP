@@ -81,13 +81,22 @@ export function LoginScreen() {
         </Link>
       </View>
       <Button title={t('auth.loginAsUser')} onPress={submit} loading={loading} testID="login-submit" />
-      <Button
-        title={`🛡️  ${t('auth.adminAccess')}`}
-        variant="secondary"
-        onPress={() => router.push('/admin-login')}
-        style={styles.adminBtn}
-        testID="login-admin"
-      />
+      <View style={styles.portals}>
+        <Button
+          title={`🛡️  ${t('auth.adminAccess')}`}
+          variant="secondary"
+          onPress={() => router.push('/admin-login')}
+          style={{ flex: 1 }}
+          testID="login-admin"
+        />
+        <Button
+          title={`🏢  ${t('companyLogin.button')}`}
+          variant="secondary"
+          onPress={() => router.push('/company-login')}
+          style={[{ flex: 1 }, styles.companyBtn]}
+          testID="login-company"
+        />
+      </View>
       <View style={styles.footer}>
         <Text style={styles.muted}>{t('auth.noAccount')} </Text>
         <Link href="/register" asChild>
@@ -106,7 +115,8 @@ export function LoginScreen() {
 const styles = StyleSheet.create({
   forgotRow: { alignItems: 'flex-end', marginTop: -2, marginBottom: 22 },
   link: { color: colors.orange, fontWeight: font.bold, fontSize: 14 },
-  adminBtn: { marginTop: 12 },
+  portals: { flexDirection: 'row', gap: 12, marginTop: 12 },
+  companyBtn: { backgroundColor: colors.navy800, borderColor: colors.navy800 },
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 24 },
   muted: { color: colors.textMuted, fontSize: 15 },
   lang: { alignSelf: 'center', marginTop: 18, padding: 6 },
