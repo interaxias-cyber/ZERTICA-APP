@@ -2,7 +2,8 @@ import { router } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar } from '@/components/avatar';
-import { Icon, categoryIcon } from '@/components/icon';
+import { Emoji, categoryEmoji } from '@/components/emoji';
+import { Icon } from '@/components/icon';
 import { Logo } from '@/components/logo';
 import { ProductCard } from '@/components/product-card';
 import { EmptyView, ErrorView, LoadingView } from '@/components/state-views';
@@ -34,7 +35,7 @@ export function HomeScreen() {
           </View>
         </View>
         <Pressable onPress={() => router.navigate('/profile')} accessibilityRole="button" accessibilityLabel={t('tabs.profile')}>
-          <Avatar name={user?.fullName ?? '?'} size={40} />
+          <Avatar name={user?.fullName ?? '?'} size={42} shape="rounded" />
         </Pressable>
       </View>
 
@@ -64,15 +65,13 @@ export function HomeScreen() {
           <Pressable style={styles.heroBtn} onPress={() => router.navigate('/catalog')} accessibilityRole="button">
             <Text style={styles.heroBtnText}>{t('home.heroCta')} →</Text>
           </Pressable>
-          <View style={styles.heroDecor}>
-            <Icon name="view-grid-outline" size={110} color="rgba(255,255,255,0.14)" />
-          </View>
+
         </View>
 
         {isAdmin ? (
-          <Pressable style={styles.adminCard} onPress={() => router.push('/admin')} accessibilityRole="button">
+          <Pressable style={styles.adminCard} onPress={() => router.navigate('/admin')} accessibilityRole="button">
             <View style={styles.adminIcon}>
-              <Icon name="shield-account-outline" size={22} color={colors.white} />
+              <Emoji char="🛡️" size={20} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.adminTitle}>{t('home.adminPanel')}</Text>
@@ -95,7 +94,7 @@ export function HomeScreen() {
                 onPress={() => router.push({ pathname: '/category/[id]', params: { id: String(c.id), name: c.name } })}
                 style={({ pressed }) => [styles.categoryTile, pressed && { opacity: 0.8 }]}
                 accessibilityRole="button">
-                  <Icon name={categoryIcon(c.name)} size={26} color={colors.navy} />
+                  <Emoji char={categoryEmoji(c.name)} size={28} />
                   <Text style={styles.categoryName} numberOfLines={2}>
                     {c.name}
                   </Text>
@@ -141,12 +140,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  brandName: { color: colors.white, fontWeight: font.heavy, fontSize: 16 },
-  brandTag: { color: colors.textOnDarkMuted, fontSize: 11 },
+  brandName: { color: colors.white, fontWeight: font.heavy, fontSize: 17 },
+  brandTag: { color: colors.textOnDarkMuted, fontSize: 13 },
   scroll: { paddingBottom: 32 },
   welcomeBlock: { backgroundColor: colors.navy, paddingHorizontal: 16, paddingBottom: 60, paddingTop: 6 },
-  welcome: { color: colors.textOnDarkMuted, fontSize: 13 },
-  userName: { color: colors.white, fontSize: 22, fontWeight: font.heavy, marginTop: 2 },
+  welcome: { color: colors.textOnDarkMuted, fontSize: 14 },
+  userName: { color: colors.white, fontSize: 24, fontWeight: font.heavy, marginTop: 2 },
   hero: {
     marginHorizontal: 16,
     marginTop: -46,
@@ -156,8 +155,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...shadow.raised,
   },
-  heroEyebrow: { color: 'rgba(255,255,255,0.85)', fontSize: 12, fontWeight: font.semibold },
-  heroTitle: { color: colors.white, fontSize: 20, fontWeight: font.heavy, marginTop: 4, maxWidth: '78%', lineHeight: 26 },
+  heroEyebrow: { color: 'rgba(255,255,255,0.9)', fontSize: 14 },
+  heroTitle: { color: colors.white, fontSize: 21, fontWeight: font.heavy, marginTop: 6, lineHeight: 27 },
   heroBtn: {
     alignSelf: 'flex-start',
     backgroundColor: colors.white,
@@ -166,12 +165,12 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     marginTop: 14,
   },
-  heroBtnText: { color: colors.orangeDark, fontWeight: font.heavy, fontSize: 13 },
+  heroBtnText: { color: colors.orange, fontWeight: font.bold, fontSize: 14 },
   heroDecor: { position: 'absolute', right: -14, bottom: -18 },
   adminCard: {
     marginHorizontal: 16,
     marginTop: 16,
-    backgroundColor: colors.navy700,
+    backgroundColor: colors.navy800,
     borderRadius: radius.lg,
     padding: 14,
     flexDirection: 'row',
@@ -188,7 +187,7 @@ const styles = StyleSheet.create({
   },
   adminTitle: { color: colors.white, fontWeight: font.bold, fontSize: 15 },
   adminSubtitle: { color: colors.textOnDarkMuted, fontSize: 12, marginTop: 2 },
-  sectionTitle: { fontSize: 17, fontWeight: font.heavy, color: colors.navy, marginTop: 22, marginBottom: 12, marginHorizontal: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: font.bold, color: colors.navy, marginTop: 22, marginBottom: 12, marginHorizontal: 16 },
   sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingRight: 16 },
   seeAll: { color: colors.orange, fontWeight: font.bold, fontSize: 13 },
   categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 10, columnGap: '2.66%', paddingHorizontal: 16 },
@@ -196,14 +195,14 @@ const styles = StyleSheet.create({
     width: '23%',
     aspectRatio: 0.95,
     backgroundColor: colors.surface,
-    borderRadius: radius.lg,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
     padding: 6,
     ...shadow.card,
   },
-  categoryName: { fontSize: 11, fontWeight: font.semibold, color: colors.text, textAlign: 'center' },
+  categoryName: { fontSize: 12, fontWeight: font.medium, color: colors.text, textAlign: 'center' },
   productGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, rowGap: 12, justifyContent: 'space-between' },
   productCell: { width: '48.3%' },
 });

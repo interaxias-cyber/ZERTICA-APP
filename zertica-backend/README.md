@@ -14,7 +14,7 @@ npm run dev              # o: npm start
 | Script | Descripción |
 | --- | --- |
 | `npm start` / `npm run dev` | Arranca la API (dev con recarga automática). No arranca si MySQL no responde. |
-| `npm run db:init` | Ejecuta `database/schema.sql` + `database/seed.sql`. **Borra y recrea las tablas.** `-- --no-seed` para solo esquema. |
+| `npm run db:init` | Ejecuta `database/schema.sql` + `database/seed.sql` y copia las imágenes de prueba a `uploads/products/`. **Borra y recrea las tablas.** `-- --no-seed` para solo esquema. |
 | `npm run seed:admin -- <usuario> <correo> <contraseña> ["Nombre"]` | Crea o actualiza un administrador. |
 | `npm test` | Pruebas de integración contra MySQL real (**reinicia la base**). |
 
@@ -31,7 +31,7 @@ src/
   models/                    SQL parametrizado
   middlewares/               auth (JWT + rol), upload (multer), errorHandler
   utils/                     ApiError, asyncHandler, url
-database/                    schema.sql, seed.sql
+database/                    schema.sql, seed.sql, seed-images/ (fotos de prueba de Figma)
 uploads/products/            Imágenes de producto subidas (no se versionan)
 tests/                       Pruebas de integración (node:test)
 ```
@@ -42,7 +42,7 @@ Cinco tablas, sin tablas adicionales: `users`, `categories`, `brands`, `products
 
 ## Autenticación
 
-`Authorization: Bearer <token>`. El token (JWT HS256, 8 h por defecto) se obtiene en `/api/auth/login` o `/api/auth/register`. En cada petición se comprueba que la cuenta siga existiendo y **activa**: desactivar una cuenta invalida sus sesiones al instante (`403 ACCOUNT_DISABLED`).
+`Authorization: Bearer <token>`. Contraseñas: mínimo 8 caracteres, una mayúscula, un número y un carácter especial. El token (JWT HS256, 8 h por defecto) se obtiene en `/api/auth/login` o `/api/auth/register`. En cada petición se comprueba que la cuenta siga existiendo y **activa**: desactivar una cuenta invalida sus sesiones al instante (`403 ACCOUNT_DISABLED`).
 
 ## Endpoints
 
@@ -54,7 +54,7 @@ Errores: `{ "error": { "code": "…", "message": "…", "details": [ { "field", 
 | --- | --- | --- |
 | `GET /api/health` | — | `200 {status:"ok",database:"up"}` · `503` si MySQL no responde |
 | `POST /api/auth/register` | `{ username, fullName, email, password, language? }` | `201 { token, expiresAt, user }` · `400 VALIDATION_ERROR` · `409 ALREADY_EXISTS` |
-| `POST /api/auth/login` | `{ username, password }` | `200 { token, expiresAt, user }` · `401 INVALID_CREDENTIALS` · `403 ACCOUNT_DISABLED` |
+| `POST /api/auth/login` | `{ username, password }` (`username` acepta usuario **o** correo) | `200 { token, expiresAt, user }` · `401 INVALID_CREDENTIALS` · `403 ACCOUNT_DISABLED` |
 | `POST /api/auth/forgot-password` | `{ email }` | `200 { message }` (siempre igual). En desarrollo sin SMTP añade `devResetToken`. |
 | `POST /api/auth/reset-password` | `{ token, password }` | `200 { message }` · `400 INVALID_RESET_TOKEN` (código de un solo uso, 30 min) |
 
@@ -75,6 +75,7 @@ Errores: `{ "error": { "code": "…", "message": "…", "details": [ { "field", 
 
 | Ruta | Descripción |
 | --- | --- |
+| `GET /api/admin/summary` | Conteos: `products {total, active, inactive, withoutImage}`, `categories {total, active, inactive}`, `brands {total}`, `users {total, active, inactive, admins}`. |
 | `GET /api/admin/products` | Todos los productos. Query de `/products` + `status=all\|active\|inactive`. Incluye `isActive` y `category.isActive`. |
 | `GET /api/admin/products/:id` | Detalle administrativo. |
 | `POST /api/admin/products` | `multipart/form-data`: `reference`, `name`, `description?`, `category_id`, `brand_id`, `image` (**obligatoria**, JPG/PNG/WEBP ≤ 5 MB). `409 REFERENCE_ALREADY_EXISTS`. |

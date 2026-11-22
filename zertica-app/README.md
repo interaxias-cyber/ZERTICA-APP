@@ -25,11 +25,12 @@ src/
   app/                 Rutas (Expo Router) — solo rutas
     _layout.tsx        Proveedores + guardas: idioma → acceso → app
     language.tsx       Selección de idioma inicial
-    (auth)/            login, register, forgot-password, reset-password
+    (auth)/            login, admin-login, register, forgot-password, reset-password
     (app)/(tabs)/      Inicio, Catálogo, Buscar, Perfil (barra inferior)
     (app)/product/[id] Detalle de producto
     (app)/category/[id] Productos de una categoría
-    (app)/admin/       Panel, productos, categorías y usuarios (solo admin)
+    (app)/admin/(tabs) Panel: Resumen, Productos, Categorías, Usuarios, Mi cuenta (solo admin)
+    (app)/admin/…/[id] Formularios de producto y categoría, detalle de usuario
   screens/             Cuerpo de cada pantalla
   components/          Botones, campos, tarjetas, chips, estados vacíos/error…
   api/                 Cliente HTTP (timeout, errores, token) y servicios por módulo

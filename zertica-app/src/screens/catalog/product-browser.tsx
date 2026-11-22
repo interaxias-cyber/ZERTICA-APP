@@ -2,14 +2,15 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Chip } from '@/components/chip';
-import { categoryIcon } from '@/components/icon';
 import { ProductCard } from '@/components/product-card';
 import { HeaderIconButton, ScreenHeader } from '@/components/screen-header';
 import { SearchInput } from '@/components/search-input';
 import { EmptyView, ErrorView, LoadingView } from '@/components/state-views';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useBrands, useCategories, useProducts } from '@/hooks/use-catalog';
+import { Avatar } from '@/components/avatar';
 import { useI18n } from '@/i18n';
+import { useAuth } from '@/providers/auth-provider';
 import { colors, font } from '@/theme';
 
 interface Props {
@@ -25,6 +26,7 @@ interface Props {
  */
 export function ProductBrowser({ mode, fixedCategory, initialCategoryId = null }: Props) {
   const { t } = useI18n();
+  const { user } = useAuth();
   const [searchText, setSearchText] = useState('');
   const [categoryId, setCategoryId] = useState<number | null>(fixedCategory?.id ?? initialCategoryId);
   const [brandId, setBrandId] = useState<number | null>(null);
@@ -56,10 +58,11 @@ export function ProductBrowser({ mode, fixedCategory, initialCategoryId = null }
       title={title}
       subtitle={subtitle}
       back={mode === 'category'}
+      leading="logo"
       right={
-        <View style={styles.headerActions}>
+        <>
           {mode === 'catalog' ? (
-            <HeaderIconButton icon="magnify" label={t('common.search')} onPress={() => router.push('/search')} />
+            <HeaderIconButton emoji="🔍" label={t('common.search')} onPress={() => router.navigate('/search')} />
           ) : null}
           <HeaderIconButton
             icon="tune-variant"
@@ -67,7 +70,12 @@ export function ProductBrowser({ mode, fixedCategory, initialCategoryId = null }
             accent={showFilters || brandId !== null}
             onPress={() => setShowFilters((v) => !v)}
           />
-        </View>
+          {mode !== 'category' ? (
+            <View accessibilityLabel={user?.fullName}>
+              <Avatar name={user?.fullName ?? '?'} size={40} shape="rounded" />
+            </View>
+          ) : null}
+        </>
       }>
       {mode !== 'catalog' ? (
         <View style={styles.searchWrap}>
@@ -92,7 +100,6 @@ export function ProductBrowser({ mode, fixedCategory, initialCategoryId = null }
             <Chip
               key={c.id}
               label={c.name}
-              icon={categoryIcon(c.name)}
               selected={categoryId === c.id}
               onPress={() => setCategoryId(categoryId === c.id ? null : c.id)}
             />
@@ -203,7 +210,6 @@ export function ProductBrowser({ mode, fixedCategory, initialCategoryId = null }
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
-  headerActions: { flexDirection: 'row', gap: 8 },
   searchWrap: { marginTop: 12 },
   filters: { paddingTop: 14, gap: 10 },
   chipsRow: { gap: 8, paddingHorizontal: 16 },

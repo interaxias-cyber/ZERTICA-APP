@@ -15,4 +15,5 @@ export function apiFieldErrors(error: unknown, translate: (code: string) => stri
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export const USERNAME_RE = /^[A-Za-z0-9._-]{3,50}$/;
-export const PASSWORD_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,72}$/;
+/** Política del diseño (Figma, pantalla Seguridad): 8+ caracteres, mayúscula, número y carácter especial. */
+export const PASSWORD_RE = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,72}$/;

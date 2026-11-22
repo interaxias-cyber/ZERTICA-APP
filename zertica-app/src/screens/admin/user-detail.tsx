@@ -49,7 +49,7 @@ export function UserDetailScreen({ id }: { id: number }) {
       ) : (
         <ScrollView contentContainerStyle={styles.body}>
           <View style={styles.identity}>
-            <Avatar name={user.fullName} size={64} />
+            <Avatar name={user.fullName} size={64} tone={user.role === 'admin' ? 'navy' : 'orange'} />
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={styles.name}>
                 {user.fullName}
@@ -58,7 +58,7 @@ export function UserDetailScreen({ id }: { id: number }) {
               <Text style={styles.username}>@{user.username}</Text>
               <View style={{ flexDirection: 'row', gap: 6 }}>
                 <StatusBadge active={user.isActive} />
-                <Tag label={user.role === 'admin' ? t('profile.roleAdmin') : t('profile.roleUser')} tone="orange" />
+                <Tag label={user.role === 'admin' ? t('profile.roleAdmin') : t('profile.roleUser')} tone={user.role === 'admin' ? 'info' : 'muted'} />
               </View>
             </View>
           </View>

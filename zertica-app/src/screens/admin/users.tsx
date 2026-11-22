@@ -3,45 +3,37 @@ import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import type { StatusFilter } from '@/api/types';
 import { Avatar } from '@/components/avatar';
+import { StatusChips } from '@/components/filter-chips';
 import { Icon } from '@/components/icon';
-import { ScreenHeader } from '@/components/screen-header';
 import { SearchInput } from '@/components/search-input';
-import { Segmented } from '@/components/segmented';
 import { EmptyView, ErrorView, LoadingView } from '@/components/state-views';
 import { StatusBadge, Tag } from '@/components/status-badge';
-import { useAdminUsers } from '@/hooks/use-admin';
+import { useAdminSummary, useAdminUsers } from '@/hooks/use-admin';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useI18n } from '@/i18n';
 import { colors, font, radius, shadow } from '@/theme';
+import { AdminHeader } from './admin-header';
 
-/** CU-25 Consultar usuarios. */
+/** Pantalla "Usuarios" del panel (Figma). CU-25 Consultar usuarios. */
 export function AdminUsersScreen() {
   const { t } = useI18n();
   const [searchText, setSearchText] = useState('');
   const [status, setStatus] = useState<StatusFilter>('all');
   const search = useDebouncedValue(searchText.trim(), 400);
   const query = useAdminUsers({ search: search || undefined, status });
+  const summary = useAdminSummary();
   const items = useMemo(() => query.data?.pages.flatMap((p) => p.data) ?? [], [query.data]);
 
   return (
     <View style={styles.flex}>
-      <ScreenHeader
+      <AdminHeader
         title={t('admin.users')}
-        subtitle={query.data ? t('common.results', { count: query.data.pages[0].meta.total }) : undefined}
-        back>
-        <View style={styles.controls}>
-          <SearchInput value={searchText} onChangeText={setSearchText} placeholder={t('admin.searchUsers')} />
-          <Segmented
-            value={status}
-            onChange={setStatus}
-            options={[
-              { value: 'all', label: t('common.all') },
-              { value: 'active', label: t('common.active') },
-              { value: 'inactive', label: t('common.inactive') },
-            ]}
-          />
-        </View>
-      </ScreenHeader>
+        subtitle={summary.data ? t('adminHome.usersSubtitle', { count: summary.data.users.total }) : undefined}
+      />
+      <View style={styles.controls}>
+        <SearchInput value={searchText} onChangeText={setSearchText} placeholder={t('admin.searchUsers')} />
+        <StatusChips value={status} onChange={setStatus} />
+      </View>
       {query.isPending ? (
         <LoadingView />
       ) : query.isError ? (
@@ -59,23 +51,24 @@ export function AdminUsersScreen() {
           keyboardDismissMode="on-drag"
           renderItem={({ item }) => (
             <Pressable
-              style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}
+              style={({ pressed }) => [styles.row, pressed && { opacity: 0.9 }]}
               onPress={() => router.push({ pathname: '/admin/users/[id]', params: { id: String(item.id) } })}
-              accessibilityRole="button">
-              <Avatar name={item.fullName} size={44} />
-              <View style={{ flex: 1, gap: 2 }}>
+              accessibilityRole="button"
+              accessibilityLabel={item.fullName}>
+              <Avatar name={item.fullName} size={52} tone={item.role === 'admin' ? 'navy' : 'orange'} />
+              <View style={{ flex: 1 }}>
                 <Text style={styles.name} numberOfLines={1}>
                   {item.fullName}
                 </Text>
                 <Text style={styles.meta} numberOfLines={1}>
-                  @{item.username} · {item.email}
+                  {item.email}
                 </Text>
                 <View style={styles.tags}>
+                  <Tag label={item.role === 'admin' ? t('profile.roleAdmin') : t('profile.roleUser')} tone={item.role === 'admin' ? 'info' : 'muted'} />
                   <StatusBadge active={item.isActive} />
-                  {item.role === 'admin' ? <Tag label={t('profile.roleAdmin')} tone="orange" /> : null}
                 </View>
               </View>
-              <Icon name="chevron-right" size={22} color="#B3BAC7" />
+              <Icon name="chevron-right" size={22} color="#9CA3AF" />
             </Pressable>
           )}
         />
@@ -86,18 +79,18 @@ export function AdminUsersScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
-  controls: { gap: 10, marginTop: 12 },
-  list: { padding: 16, gap: 10, flexGrow: 1 },
+  controls: { paddingHorizontal: 16, paddingTop: 16, gap: 12 },
+  list: { padding: 16, gap: 12, flexGrow: 1 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
     backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: 12,
+    borderRadius: radius.md,
+    padding: 16,
     ...shadow.card,
   },
-  name: { fontSize: 15, fontWeight: font.bold, color: colors.text },
-  meta: { fontSize: 12, color: colors.textMuted },
-  tags: { flexDirection: 'row', gap: 6, marginTop: 4 },
+  name: { fontSize: 16, fontWeight: font.bold, color: colors.text },
+  meta: { fontSize: 13, color: colors.textMuted, marginTop: 2 },
+  tags: { flexDirection: 'row', gap: 6, marginTop: 8 },
 });

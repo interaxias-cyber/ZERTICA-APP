@@ -1,11 +1,12 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { profileApi } from '@/api/auth';
 import { ApiError } from '@/api/client';
 import { Button } from '@/components/button';
 import { Notice } from '@/components/notice';
-import { ScreenHeader } from '@/components/screen-header';
+import { Avatar } from '@/components/avatar';
+import { SubpageHeader } from '@/components/screen-header';
 import { TextField } from '@/components/text-field';
 import { useI18n } from '@/i18n';
 import { apiFieldErrors, EMAIL_RE, type FieldErrors } from '@/lib/forms';
@@ -49,28 +50,29 @@ export function EditProfileScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScreenHeader title={t('profile.editTitle')} back />
+      <SubpageHeader context={t('profile.title')} contextSubtitle={user?.fullName} title={t('profile.personalData')} />
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+        <View style={styles.avatar}>
+          <Avatar name={fullName || user?.fullName || '?'} size={96} />
+        </View>
         <Notice message={serverError} />
-        <TextField label={t('profile.username')} value={user?.username ?? ''} editable={false} icon="account-outline" />
+        <TextField label={t('profile.username')} value={user?.username ?? ''} editable={false} />
         <TextField
           label={t('auth.fullName')}
           value={fullName}
           onChangeText={setFullName}
-          icon="card-account-details-outline"
           error={errors.fullName}
         />
         <TextField
           label={t('auth.email')}
           value={email}
           onChangeText={setEmail}
-          icon="email-outline"
           keyboardType="email-address"
           autoCapitalize="none"
           error={errors.email}
           onSubmitEditing={submit}
         />
-        <Button title={t('common.save')} onPress={submit} loading={saving} style={{ marginTop: 8 }} />
+        <Button title={t('profile.saveChanges')} onPress={submit} loading={saving} style={{ marginTop: 8 }} />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -79,4 +81,5 @@ export function EditProfileScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
   body: { padding: 20 },
+  avatar: { alignItems: 'center', marginBottom: 18 },
 });

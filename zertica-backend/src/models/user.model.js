@@ -20,6 +20,24 @@ async function findByUsernameWithHash(username) {
   return rows[0] || null;
 }
 
+/** Inicio de sesión con nombre de usuario o correo. */
+async function findByLoginWithHash(login) {
+  const [rows] = await pool.query(
+    `SELECT ${PUBLIC_COLUMNS}, password_hash FROM users WHERE username = ? OR email = ? LIMIT 1`,
+    [login, login.toLowerCase()],
+  );
+  return rows[0] || null;
+}
+
+async function summary() {
+  const [[row]] = await pool.query(
+    `SELECT COUNT(*) AS total, COALESCE(SUM(is_active = 1), 0) AS active,
+            COALESCE(SUM(is_active = 0), 0) AS inactive, COALESCE(SUM(role = 'admin'), 0) AS admins
+     FROM users`,
+  );
+  return row;
+}
+
 async function findByEmailWithHash(email) {
   const [rows] = await pool.query(`SELECT ${PUBLIC_COLUMNS}, password_hash FROM users WHERE email = ?`, [email]);
   return rows[0] || null;
@@ -96,6 +114,8 @@ module.exports = {
   findByIdWithHash,
   findByUsernameWithHash,
   findByEmailWithHash,
+  findByLoginWithHash,
+  summary,
   existsUsername,
   existsEmail,
   create,

@@ -4,19 +4,23 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/icon';
 import { Logo } from '@/components/logo';
-import { colors, font, radius } from '@/theme';
+import { useI18n } from '@/i18n';
+import { colors, font } from '@/theme';
 
 interface Props {
   title: string;
   subtitle?: string;
   back?: boolean;
   compact?: boolean;
+  /** Elemento sobre el título (p. ej. aviso de acceso restringido). */
+  badge?: ReactNode;
   children: ReactNode;
 }
 
 /** Composición de la pantalla de acceso de la presentación: cabecera azul con logo y hoja clara. */
-export function AuthShell({ title, subtitle, back, compact, children }: Props) {
+export function AuthShell({ title, subtitle, back, compact, badge, children }: Props) {
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
@@ -24,20 +28,21 @@ export function AuthShell({ title, subtitle, back, compact, children }: Props) {
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
         bounces={false}>
-        <View style={[styles.hero, { paddingTop: insets.top + (compact ? 16 : 40) }, compact && styles.heroCompact]}>
+        <View style={[styles.hero, { paddingTop: insets.top + (compact ? 52 : back ? 64 : 44) }, compact && styles.heroCompact]}>
           {back ? (
             <Pressable
               onPress={() => (router.canGoBack() ? router.back() : router.replace('/login'))}
               style={[styles.back, { top: insets.top + 12 }]}
               accessibilityRole="button"
-              accessibilityLabel="back"
               hitSlop={8}>
-              <Icon name="arrow-left" size={22} color={colors.white} />
+              <Icon name="arrow-left" size={20} color={colors.textOnDarkMuted} />
+              <Text style={styles.backText}>{t('adminLogin.back')}</Text>
             </Pressable>
           ) : null}
-          <Logo size={compact ? 56 : 76} showName={!compact} />
+          <Logo size={compact ? 64 : 88} showName={!compact} />
         </View>
         <View style={[styles.sheet, { paddingBottom: insets.bottom + 28 }]}>
+          {badge}
           <Text style={styles.title}>{title}</Text>
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
           <View style={styles.content}>{children}</View>
@@ -52,17 +57,8 @@ const styles = StyleSheet.create({
   scroll: { flexGrow: 1 },
   hero: { alignItems: 'center', paddingBottom: 34 },
   heroCompact: { paddingBottom: 24 },
-  back: {
-    position: 'absolute',
-    left: 16,
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1,
-  },
+  back: { position: 'absolute', left: 18, flexDirection: 'row', alignItems: 'center', gap: 6, zIndex: 1, padding: 4 },
+  backText: { color: colors.textOnDarkMuted, fontSize: 16 },
   sheet: {
     flex: 1,
     backgroundColor: colors.background,
@@ -71,7 +67,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingTop: 28,
   },
-  title: { fontSize: 26, fontWeight: font.heavy, color: colors.navy },
-  subtitle: { fontSize: 14, color: colors.textMuted, marginTop: 4, lineHeight: 20 },
+  title: { fontSize: 27, fontWeight: font.heavy, color: colors.navy },
+  subtitle: { fontSize: 15, color: colors.textMuted, marginTop: 4, lineHeight: 21 },
   content: { marginTop: 22 },
 });

@@ -1,20 +1,20 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Avatar } from '@/components/avatar';
-import { ListRow, Section } from '@/components/list-row';
-import { Tag } from '@/components/status-badge';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Button } from '@/components/button';
+import { MenuCard, StatsCard } from '@/components/menu-card';
+import { ProfileHero } from '@/components/profile-hero';
+import { HeaderIconButton } from '@/components/screen-header';
+import { StatusBadge, Tag } from '@/components/status-badge';
 import { useI18n } from '@/i18n';
 import { confirmAction } from '@/lib/confirm';
 import { useAuth } from '@/providers/auth-provider';
-import { colors, font, radius } from '@/theme';
+import { colors } from '@/theme';
 
-/** CU-06 Consultar perfil, acceso a CU-07, CU-08, idioma (RF09) y CU-05 cerrar sesión. */
+/** CU-06 Consultar perfil — pantalla "Mi Perfil" de Figma. Acceso a CU-07, CU-08, idioma y CU-05. */
 export function ProfileScreen() {
   const { t } = useI18n();
   const { user, isAdmin, signOut } = useAuth();
-  const insets = useSafeAreaInsets();
   const [signingOut, setSigningOut] = useState(false);
 
   if (!user) return null;
@@ -29,55 +29,57 @@ export function ProfileScreen() {
 
   return (
     <ScrollView style={styles.flex} contentContainerStyle={{ paddingBottom: 32 }}>
-      <View style={[styles.header, { paddingTop: insets.top + 18 }]}>
-        <Text style={styles.headerTitle}>{t('profile.title')}</Text>
-        <View style={styles.identity}>
-          <Avatar name={user.fullName} size={64} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{user.fullName}</Text>
-            <Text style={styles.username}>@{user.username}</Text>
-            <View style={{ marginTop: 6 }}>
-              <Tag label={isAdmin ? t('profile.roleAdmin') : t('profile.roleUser')} tone="orange" />
-            </View>
-          </View>
-        </View>
-      </View>
-
+      <ProfileHero
+        title={t('profile.title')}
+        subtitle={user.fullName}
+        name={user.fullName}
+        email={user.email}
+        right={<HeaderIconButton emoji="⚙️" label={t('profile.language')} onPress={() => router.push('/language-settings')} />}
+        badges={
+          <>
+            <Tag tone="navy" label={isAdmin ? t('profile.roleAdmin') : t('profile.roleUser')} />
+            <StatusBadge active={user.isActive} />
+          </>
+        }
+      />
+      <StatsCard
+        items={[
+          { value: `@${user.username}`, label: t('profile.username') },
+          { value: user.language.toUpperCase(), label: t('profile.statLanguage') },
+          { value: String(new Date(user.createdAt).getFullYear()), label: t('profile.statSince') },
+        ]}
+      />
       <View style={styles.body}>
-        <Section title={t('profile.account')}>
-          <ListRow icon="account-outline" title={t('profile.username')} value={user.username} />
-          <ListRow icon="card-account-details-outline" title={t('auth.fullName')} value={user.fullName} />
-          <ListRow icon="email-outline" title={t('profile.email')} value={user.email} last />
-        </Section>
-
-        <Section title={t('profile.preferences')}>
-          <ListRow icon="pencil-outline" title={t('profile.editProfile')} onPress={() => router.push('/profile-edit')} testID="profile-edit" />
-          <ListRow icon="lock-reset" title={t('profile.changePassword')} onPress={() => router.push('/change-password')} />
-          <ListRow
-            icon="translate"
-            title={t('profile.language')}
-            value={user.language === 'es' ? 'Español' : 'English'}
-            onPress={() => router.push('/language-settings')}
-            last
-          />
-        </Section>
-
+        <MenuCard
+          emoji="👤"
+          title={t('profile.personalData')}
+          subtitle={t('profile.personalDataSub')}
+          onPress={() => router.push('/profile-edit')}
+          testID="profile-edit"
+        />
+        <MenuCard
+          emoji="🔒"
+          title={t('profile.security')}
+          subtitle={t('profile.securitySub')}
+          onPress={() => router.push('/change-password')}
+        />
+        <MenuCard
+          emoji="🌐"
+          title={t('profile.language')}
+          subtitle={user.language === 'es' ? 'Español' : 'English'}
+          onPress={() => router.push('/language-settings')}
+        />
         {isAdmin ? (
-          <Section title={t('profile.administration')}>
-            <ListRow icon="shield-account-outline" title={t('home.adminPanel')} subtitle={t('home.adminPanelSubtitle')} onPress={() => router.push('/admin')} last />
-          </Section>
+          <MenuCard emoji="🛡️" title={t('home.adminPanel')} subtitle={t('profile.adminPanelSub')} onPress={() => router.navigate('/admin')} />
         ) : null}
-
-        <Section>
-          <ListRow
-            icon="logout"
-            title={signingOut ? t('common.loading') : t('profile.logout')}
-            destructive
-            onPress={signingOut ? undefined : logout}
-            last
-            testID="logout"
-          />
-        </Section>
+        <Button
+          title={signingOut ? t('common.loading') : t('profile.logout')}
+          variant="dangerSolid"
+          onPress={logout}
+          disabled={signingOut}
+          style={{ marginTop: 8 }}
+          testID="logout"
+        />
       </View>
     </ScrollView>
   );
@@ -85,16 +87,5 @@ export function ProfileScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
-  header: {
-    backgroundColor: colors.navy,
-    paddingHorizontal: 20,
-    paddingBottom: 26,
-    borderBottomLeftRadius: radius.xl,
-    borderBottomRightRadius: radius.xl,
-  },
-  headerTitle: { color: colors.white, fontSize: 19, fontWeight: font.heavy, marginBottom: 18 },
-  identity: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  name: { color: colors.white, fontSize: 19, fontWeight: font.heavy },
-  username: { color: colors.textOnDarkMuted, fontSize: 13, marginTop: 2 },
-  body: { padding: 16, paddingTop: 20 },
+  body: { paddingHorizontal: 16 },
 });

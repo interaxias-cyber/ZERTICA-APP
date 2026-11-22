@@ -44,7 +44,6 @@ export function ForgotPasswordScreen() {
       <TextField
         label={t('auth.email')}
         placeholder={t('auth.emailPlaceholder')}
-        icon="email-outline"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"

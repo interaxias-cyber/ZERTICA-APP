@@ -1,7 +1,9 @@
 import { router } from 'expo-router';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
-import { Icon, categoryIcon } from '@/components/icon';
-import { HeaderIconButton, ScreenHeader } from '@/components/screen-header';
+import { EmojiTile, categoryEmoji } from '@/components/emoji';
+import { Icon } from '@/components/icon';
+import { HeaderPill } from '@/components/screen-header';
+import { AdminHeader } from './admin-header';
 import { EmptyView, ErrorView, LoadingView } from '@/components/state-views';
 import { StatusBadge } from '@/components/status-badge';
 import { useAdminCategories } from '@/hooks/use-admin';
@@ -15,11 +17,10 @@ export function AdminCategoriesScreen() {
 
   return (
     <View style={styles.flex}>
-      <ScreenHeader
+      <AdminHeader
         title={t('admin.categories')}
-        subtitle={query.data ? t('common.results', { count: query.data.length }) : undefined}
-        back
-        right={<HeaderIconButton icon="plus" accent label={t('admin.newCategory')} onPress={() => router.push('/admin/categories/new')} />}
+        subtitle={query.data ? t('adminHome.categoriesSubtitle', { count: query.data.length }) : undefined}
+        actions={<HeaderPill label={t('adminHome.newCategoryShort')} onPress={() => router.push('/admin/categories/new')} />}
       />
       {query.isPending ? (
         <LoadingView />
@@ -37,15 +38,13 @@ export function AdminCategoriesScreen() {
               style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}
               onPress={() => router.push({ pathname: '/admin/categories/[id]', params: { id: String(item.id) } })}
               accessibilityRole="button">
-              <View style={styles.icon}>
-                <Icon name={categoryIcon(item.name)} size={22} color={colors.navy} />
-              </View>
+              <EmojiTile char={categoryEmoji(item.name)} />
               <View style={{ flex: 1, gap: 4 }}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.meta}>{(item.productCount === 1 ? t('admin.productsCountOne') : t('admin.productsCount', { count: item.productCount }))}</Text>
               </View>
               <StatusBadge active={item.isActive} />
-              <Icon name="chevron-right" size={22} color="#B3BAC7" />
+              <Icon name="chevron-right" size={22} color="#9CA3AF" />
             </Pressable>
           )}
         />
@@ -62,11 +61,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     backgroundColor: colors.surface,
-    borderRadius: radius.lg,
+    borderRadius: radius.md,
     padding: 14,
     ...shadow.card,
   },
-  icon: { width: 42, height: 42, borderRadius: radius.md, backgroundColor: colors.navy100, alignItems: 'center', justifyContent: 'center' },
-  name: { fontSize: 15, fontWeight: font.bold, color: colors.text },
-  meta: { fontSize: 12, color: colors.textMuted },
+  name: { fontSize: 16, fontWeight: font.bold, color: colors.text },
+  meta: { fontSize: 13, color: colors.textMuted },
 });

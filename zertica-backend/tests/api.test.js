@@ -66,24 +66,28 @@ test('GET /api/health', async () => {
 });
 
 test('CU-03 inicio de sesión: correcto, incorrecto y cuenta desactivada', async () => {
-  let r = await api('POST', '/auth/login', { body: { username: 'admin', password: 'Admin123*' } });
+  let r = await api('POST', '/auth/login', { body: { username: 'admin', password: 'Admin2026#' } });
   assert.equal(r.status, 200);
   assert.ok(r.body.token);
   assert.equal(r.body.user.role, 'admin');
   assert.equal(r.body.user.password_hash, undefined);
   tokens.admin = r.body.token;
 
-  r = await api('POST', '/auth/login', { body: { username: 'usuario', password: 'Usuario123*' } });
+  r = await api('POST', '/auth/login', { body: { username: 'juan', password: 'Usuario2026#' } });
   assert.equal(r.status, 200);
   tokens.user = r.body.token;
 
-  r = await api('POST', '/auth/login', { body: { username: 'usuario', password: 'mala' } });
+  r = await api('POST', '/auth/login', { body: { username: 'juan', password: 'mala' } });
   assert.equal(r.status, 401);
   assert.equal(r.body.error.code, 'INVALID_CREDENTIALS');
 
-  r = await api('POST', '/auth/login', { body: { username: 'inactivo', password: 'Inactivo123*' } });
+  r = await api('POST', '/auth/login', { body: { username: 'pedro', password: 'Inactivo2026#' } });
   assert.equal(r.status, 403);
   assert.equal(r.body.error.code, 'ACCOUNT_DISABLED');
+
+  r = await api('POST', '/auth/login', { body: { username: 'admin@zertica.com', password: 'Admin2026#' } });
+  assert.equal(r.status, 200, 'inicio de sesión con correo (diseño de Figma)');
+  assert.equal(r.body.user.username, 'admin');
 
   r = await api('POST', '/auth/login', { body: {} });
   assert.equal(r.status, 400);
@@ -92,7 +96,7 @@ test('CU-03 inicio de sesión: correcto, incorrecto y cuenta desactivada', async
 
 test('CU-01/CU-02 registro con validación y unicidad', async () => {
   let r = await api('POST', '/auth/register', {
-    body: { username: 'nuevo', fullName: 'Nuevo Usuario', email: 'nuevo@zertica.local', password: 'Nuevo1234', language: 'en' },
+    body: { username: 'nuevo', fullName: 'Nuevo Usuario', email: 'nuevo@zertica.local', password: 'Nuevo123*', language: 'en' },
   });
   assert.equal(r.status, 201);
   assert.equal(r.body.user.role, 'user');
@@ -100,10 +104,16 @@ test('CU-01/CU-02 registro con validación y unicidad', async () => {
   tokens.nuevo = r.body.token;
 
   r = await api('POST', '/auth/register', {
-    body: { username: 'nuevo', fullName: 'Otro', email: 'nuevo@zertica.local', password: 'Nuevo1234' },
+    body: { username: 'nuevo', fullName: 'Otro', email: 'nuevo@zertica.local', password: 'Nuevo123*' },
   });
   assert.equal(r.status, 409);
   assert.deepEqual(r.body.error.details.map((d) => d.field).sort(), ['email', 'username']);
+
+  r = await api('POST', '/auth/register', {
+    body: { username: 'otro', fullName: 'Otro Usuario', email: 'otro@zertica.local', password: 'sinmayuscula1*' },
+  });
+  assert.equal(r.status, 400, 'la contraseña exige mayúscula, número y carácter especial');
+  assert.equal(r.body.error.details[0].code, 'WEAK_PASSWORD');
 
   r = await api('POST', '/auth/register', { body: { username: 'a', email: 'x', password: '123' } });
   assert.equal(r.status, 400);
@@ -167,6 +177,9 @@ test('CU-14/CU-15 detalle con características', async () => {
   assert.equal(r.status, 200);
   assert.equal(r.body.data.reference, 'PLC-STD-12');
   assert.deepEqual(r.body.data.features.map((f) => [f.name, f.value]), [['Espesor', '12.7 mm'], ['Dimensiones', '1.22 x 2.44 m']]);
+  const img = await fetch(r.body.data.imageUrl);
+  assert.equal(img.status, 200, 'la imagen de prueba se sirve desde /uploads');
+
   r = await api('GET', '/products/999', { token: tokens.user });
   assert.equal(r.status, 404);
   assert.equal(r.body.error.code, 'PRODUCT_NOT_FOUND');
@@ -181,16 +194,16 @@ test('CU-06/CU-07/CU-08 perfil, idioma y contraseña', async () => {
   assert.equal(r.body.data.fullName, 'Nuevo Editado');
   assert.equal(r.body.data.language, 'es');
 
-  r = await api('PATCH', '/me', { token: tokens.nuevo, body: { email: 'admin@zertica.local' } });
+  r = await api('PATCH', '/me', { token: tokens.nuevo, body: { email: 'admin@zertica.com' } });
   assert.equal(r.status, 409);
 
-  r = await api('PUT', '/me/password', { token: tokens.nuevo, body: { currentPassword: 'mala1234', newPassword: 'Otra12345' } });
+  r = await api('PUT', '/me/password', { token: tokens.nuevo, body: { currentPassword: 'mala1234', newPassword: 'Otra1234*' } });
   assert.equal(r.status, 400);
   assert.equal(r.body.error.details[0].code, 'INCORRECT_PASSWORD');
 
-  r = await api('PUT', '/me/password', { token: tokens.nuevo, body: { currentPassword: 'Nuevo1234', newPassword: 'Otra12345' } });
+  r = await api('PUT', '/me/password', { token: tokens.nuevo, body: { currentPassword: 'Nuevo123*', newPassword: 'Otra1234*' } });
   assert.equal(r.status, 200);
-  r = await api('POST', '/auth/login', { body: { username: 'nuevo', password: 'Otra12345' } });
+  r = await api('POST', '/auth/login', { body: { username: 'nuevo', password: 'Otra1234*' } });
   assert.equal(r.status, 200);
 });
 
@@ -204,11 +217,11 @@ test('CU-04 recuperación de contraseña (modo desarrollo)', async () => {
   const token = r.body.devResetToken;
   assert.ok(token);
 
-  r = await api('POST', '/auth/reset-password', { body: { token, password: 'Reset12345' } });
+  r = await api('POST', '/auth/reset-password', { body: { token, password: 'Reset123*' } });
   assert.equal(r.status, 200);
-  r = await api('POST', '/auth/reset-password', { body: { token, password: 'Reset99999' } });
+  r = await api('POST', '/auth/reset-password', { body: { token, password: 'Reset999*' } });
   assert.equal(r.status, 400, 'el código es de un solo uso');
-  r = await api('POST', '/auth/login', { body: { username: 'nuevo', password: 'Reset12345' } });
+  r = await api('POST', '/auth/login', { body: { username: 'nuevo', password: 'Reset123*' } });
   assert.equal(r.status, 200);
 });
 
@@ -296,12 +309,12 @@ test('CU-22..CU-24 gestión de categorías', async () => {
 test('CU-25..CU-27 gestión de usuarios', async () => {
   let r = await api('GET', '/admin/users', { token: tokens.admin });
   assert.equal(r.status, 200);
-  assert.ok(r.body.meta.total >= 4);
+  assert.ok(r.body.meta.total >= 5);
   assert.ok(r.body.data.every((u) => u.password_hash === undefined && u.passwordHash === undefined));
 
-  const usuario = r.body.data.find((u) => u.username === 'usuario');
+  const usuario = r.body.data.find((u) => u.username === 'juan');
   r = await api('GET', `/admin/users/${usuario.id}`, { token: tokens.admin });
-  assert.equal(r.body.data.email, 'usuario@zertica.local');
+  assert.equal(r.body.data.email, 'juan@mail.com');
 
   r = await api('PATCH', `/admin/users/${usuario.id}/status`, { token: tokens.admin, body: { isActive: false } });
   assert.equal(r.body.data.isActive, false);
@@ -314,6 +327,17 @@ test('CU-25..CU-27 gestión de usuarios', async () => {
   r = await api('PATCH', `/admin/users/${me.id}/status`, { token: tokens.admin, body: { isActive: false } });
   assert.equal(r.status, 400);
   assert.equal(r.body.error.code, 'CANNOT_DEACTIVATE_SELF');
+});
+
+test('resumen del panel administrativo', async () => {
+  let r = await api('GET', '/admin/summary', { token: tokens.admin });
+  assert.equal(r.status, 200);
+  assert.equal(r.body.data.categories.total, 5);
+  assert.equal(r.body.data.brands.total, 3);
+  assert.ok(r.body.data.products.total >= 7);
+  assert.ok(r.body.data.users.admins >= 1);
+  r = await api('GET', '/admin/summary', { token: tokens.user });
+  assert.equal(r.status, 403);
 });
 
 test('errores uniformes', async () => {

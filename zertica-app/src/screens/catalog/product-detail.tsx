@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   metaLabel: { fontSize: 11, color: colors.textMuted },
   metaValue: { fontSize: 14, fontWeight: font.bold, color: colors.navy },
   sectionTitle: { fontSize: 15, fontWeight: font.heavy, color: colors.navy, marginBottom: 8 },
-  description: { fontSize: 14, color: '#3E4A5E', lineHeight: 21 },
+  description: { fontSize: 14, color: colors.textBody, lineHeight: 21 },
   featureRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 11, gap: 12 },
   featureDivider: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   featureName: { fontSize: 14, color: colors.textMuted },

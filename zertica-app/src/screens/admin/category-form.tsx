@@ -137,6 +137,6 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 18,
   },
-  label: { fontSize: 13, fontWeight: font.semibold, color: '#4A5468' },
+  label: { fontSize: 13, fontWeight: font.semibold, color: colors.textMuted },
   meta: { fontSize: 12, color: colors.textMuted },
 });

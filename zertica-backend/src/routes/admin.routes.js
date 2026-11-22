@@ -6,6 +6,10 @@ const products = require('../controllers/product.controller');
 const catalog = require('../controllers/catalog.controller');
 const users = require('../controllers/user.controller');
 const { productImage } = require('../middlewares/upload');
+const { getSummary } = require('../services/summary.service');
+
+// Resumen del panel (conteos de las 5 tablas).
+router.get('/summary', h(async (req, res) => res.json(await getSummary())));
 
 // D · Gestión de productos (CU-16 a CU-21)
 router.get('/products', h(products.adminList));

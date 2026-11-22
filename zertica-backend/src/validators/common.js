@@ -4,8 +4,9 @@ const ApiError = require('../utils/ApiError');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const USERNAME_RE = /^[A-Za-z0-9._-]{3,50}$/;
-// Propuesta: mínimo 8 caracteres con al menos una letra y un número.
-const PASSWORD_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,72}$/;
+// Diseño de Figma (pantalla Seguridad): al menos 8 caracteres, una letra
+// mayúscula, un número y un carácter especial.
+const PASSWORD_RE = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,72}$/;
 
 function parsePositiveInt(value, field, { defaultValue, max } = {}) {
   if (value === undefined || value === null || value === '') return defaultValue;

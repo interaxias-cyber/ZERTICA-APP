@@ -30,9 +30,10 @@ function validateRegister(body) {
   return { username, fullName, email, password, language };
 }
 
+/** El diseño de Figma pide correo; los casos de uso, usuario: se aceptan ambos. */
 function validateLogin(body) {
   const errors = new FieldErrors();
-  const username = str(body.username);
+  const username = str(body.username ?? body.email ?? body.identifier);
   const password = typeof body.password === 'string' ? body.password : '';
   if (!username) errors.add('username', 'REQUIRED');
   if (!password) errors.add('password', 'REQUIRED');

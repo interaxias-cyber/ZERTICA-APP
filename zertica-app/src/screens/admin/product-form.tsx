@@ -7,7 +7,7 @@ import type { AdminProduct } from '@/api/types';
 import { ApiError } from '@/api/client';
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
-import { categoryIcon } from '@/components/icon';
+import { categoryEmoji } from '@/components/emoji';
 import { Notice } from '@/components/notice';
 import { ProductImage } from '@/components/product-image';
 import { ScreenHeader } from '@/components/screen-header';
@@ -222,8 +222,7 @@ function ProductForm({ initial }: { initial: AdminProduct | null }) {
           {(categories.data ?? []).map((c) => (
             <Chip
               key={c.id}
-              label={c.isActive ? c.name : `${c.name} (${t('common.inactive').toLowerCase()})`}
-              icon={categoryIcon(c.name)}
+              label={`${categoryEmoji(c.name)} ${c.isActive ? c.name : `${c.name} (${t('common.inactive').toLowerCase()})`}`}
               selected={categoryId === c.id}
               onPress={() => edit('category_id', setCategoryId)(c.id)}
             />
@@ -248,7 +247,7 @@ function ProductForm({ initial }: { initial: AdminProduct | null }) {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
   body: { padding: 20, paddingBottom: 40 },
-  label: { fontSize: 13, fontWeight: font.semibold, color: '#4A5468', marginBottom: 8 },
+  label: { fontSize: 13, fontWeight: font.semibold, color: colors.textMuted, marginBottom: 8 },
   statusCard: {
     flexDirection: 'row',
     alignItems: 'center',

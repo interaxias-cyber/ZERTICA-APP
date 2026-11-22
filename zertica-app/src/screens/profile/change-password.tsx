@@ -1,17 +1,20 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { profileApi } from '@/api/auth';
 import { Button } from '@/components/button';
 import { Notice } from '@/components/notice';
-import { ScreenHeader } from '@/components/screen-header';
+import { PasswordRules } from '@/components/password-rules';
+import { SubpageHeader } from '@/components/screen-header';
+import { useAuth } from '@/providers/auth-provider';
 import { TextField } from '@/components/text-field';
 import { useI18n } from '@/i18n';
 import { apiFieldErrors, PASSWORD_RE, type FieldErrors } from '@/lib/forms';
-import { colors } from '@/theme';
+import { colors, font, radius } from '@/theme';
 
 /** CU-08 Cambiar contraseña (verifica la actual en el backend). */
 export function ChangePasswordScreen() {
   const { t, errorMessage, fieldMessage } = useI18n();
+  const { user } = useAuth();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -49,16 +52,17 @@ export function ChangePasswordScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScreenHeader title={t('profile.passwordTitle')} back />
+      <SubpageHeader context={t('profile.title')} contextSubtitle={user?.fullName} title={t('profile.securityTitle')} />
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
         <Notice message={serverError} />
         {done ? <Notice tone="success" message={t('profile.passwordChanged')} /> : null}
+        <View style={styles.card}>
+        <Text style={styles.cardTitle}>{t('profile.changePasswordCard')}</Text>
         <TextField
           label={t('profile.currentPassword')}
           value={current}
           onChangeText={setCurrent}
           secure
-          icon="lock-outline"
           error={errors.currentPassword}
         />
         <TextField
@@ -66,20 +70,19 @@ export function ChangePasswordScreen() {
           value={next}
           onChangeText={setNext}
           secure
-          icon="lock-plus-outline"
-          hint={t('auth.passwordHint')}
           error={errors.newPassword}
         />
         <TextField
-          label={t('auth.confirmPassword')}
+          label={t('profile.newPasswordConfirm')}
           value={confirm}
           onChangeText={setConfirm}
           secure
-          icon="lock-check-outline"
           error={errors.confirm}
           onSubmitEditing={submit}
         />
-        <Button title={t('common.save')} onPress={submit} loading={saving} style={{ marginTop: 8 }} />
+        <PasswordRules value={next} />
+        <Button title={t('profile.updatePassword')} onPress={submit} loading={saving} />
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -87,5 +90,7 @@ export function ChangePasswordScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
-  body: { padding: 20 },
+  body: { padding: 16 },
+  card: { backgroundColor: colors.surface, borderRadius: radius.lg, padding: 18 },
+  cardTitle: { fontSize: 17, fontWeight: font.bold, color: colors.text, marginBottom: 14 },
 });

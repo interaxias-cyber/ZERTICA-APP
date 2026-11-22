@@ -54,12 +54,12 @@ async function register(data) {
 
 /** CU-03: credenciales incorrectas → 401; cuenta desactivada → 403. */
 async function login({ username, password }) {
-  const user = await userModel.findByUsernameWithHash(username);
+  const user = await userModel.findByLoginWithHash(username);
   // Se compara siempre para no revelar por tiempo si el usuario existe.
   const hash = user ? user.password_hash : DUMMY_HASH;
   const ok = await bcrypt.compare(password, hash);
   if (!user || !ok) {
-    throw ApiError.unauthorized('INVALID_CREDENTIALS', 'Usuario o contraseña incorrectos.');
+    throw ApiError.unauthorized('INVALID_CREDENTIALS', 'Usuario, correo o contraseña incorrectos.');
   }
   if (!user.is_active) {
     throw ApiError.forbidden('ACCOUNT_DISABLED', 'La cuenta está desactivada. Contacte al administrador.');

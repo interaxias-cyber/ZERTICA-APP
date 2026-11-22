@@ -11,13 +11,18 @@
 --   · GET /api/products?search=PLC&category_id=1 devuelve total = 2.
 -- El resto de registros es RECONSTRUIDO (placas, perfilería, tornillería y
 -- masillas, sección 2) porque el schema.sql original no estaba disponible.
--- Los productos no tienen imagen, igual que los datos originales (decisión 8).
+-- Imágenes: fotografías tomadas del diseño de Figma (24 pantallas). Los
+-- archivos están en database/seed-images/ y `npm run db:init` los copia a
+-- uploads/products/. Si se carga este SQL a mano, copie esa carpeta también.
 --
--- Usuarios de prueba (contraseñas en texto plano SOLO en la documentación;
--- en la base se guarda el hash bcrypt):
---   admin    / Admin123*     rol admin, activo
---   usuario  / Usuario123*   rol user,  activo
---   inactivo / Inactivo123*  rol user,  DESACTIVADO (para probar RN05)
+-- Usuarios de prueba, tomados del diseño de Figma (credenciales de demo del
+-- acceso administrativo y lista de usuarios). Contraseñas en texto plano SOLO
+-- en la documentación; en la base se guarda el hash bcrypt:
+--   admin  / admin@zertica.com / Admin2026#     rol admin, activo
+--   juan   / juan@mail.com     / Usuario2026#   rol user,  activo
+--   maria  / maria@mail.com    / Usuario2026#   rol user,  activo
+--   pedro  / pedro@mail.com    / Inactivo2026#  rol user,  DESACTIVADO (RN05)
+-- Se puede iniciar sesión con el nombre de usuario o con el correo.
 -- =============================================================================
 
 USE zertica;
@@ -36,22 +41,22 @@ INSERT INTO brands (id, name) VALUES
 INSERT INTO products (id, reference, name, description, image_url, brand_id, category_id, is_active) VALUES
   (1, 'PLC-STD-12', 'Placa de yeso estándar 1/2"',
      'Placa de yeso para muros y cielos rasos interiores en sistemas de construcción en seco.',
-     NULL, 1, 1, 1),
+     '/uploads/products/seed-plc-std-12.jpg', 1, 1, 1),
   (2, 'PLC-RH-12', 'Placa de yeso resistente a la humedad 1/2"',
      'Placa de yeso con aditivos hidrófugos para baños, cocinas y zonas húmedas interiores.',
-     NULL, 2, 1, 1),
+     '/uploads/products/seed-plc-rh-12.jpg', 2, 1, 1),
   (3, 'PRF-CAN-36', 'Perfil canal 3.6 m',
      'Perfil metálico galvanizado tipo canal para estructuras de muros y cielos en drywall.',
-     NULL, 1, 2, 1),
+     '/uploads/products/seed-prf-can-36.jpg', 1, 2, 1),
   (4, 'PRF-PST-36', 'Perfil poste 3.6 m',
      'Perfil metálico galvanizado tipo poste (parante) para estructuras de muros en drywall.',
-     NULL, 3, 2, 1),
+     '/uploads/products/seed-prf-pst-36.jpg', 3, 2, 1),
   (5, 'TRN-PAN-1', 'Tornillo punta aguja 1"',
      'Tornillo autorroscante punta aguja para fijar placas de yeso a perfilería metálica.',
-     NULL, 2, 3, 1),
+     '/uploads/products/seed-trn-pan-1.jpg', 2, 3, 1),
   (6, 'MAS-MP-5', 'Masilla multipropósito 5 kg',
      'Masilla lista para usar en tratamiento de juntas, encintado y acabado de placas de yeso.',
-     NULL, 3, 4, 1);
+     '/uploads/products/seed-mas-mp-5.jpg', 3, 4, 1);
 
 INSERT INTO product_features (product_id, name, value) VALUES
   (1, 'Espesor', '12.7 mm'),
@@ -61,9 +66,11 @@ INSERT INTO product_features (product_id, name, value) VALUES
   (6, 'Peso', '5 kg');
 
 INSERT INTO users (username, full_name, email, password_hash, role, language, is_active) VALUES
-  ('admin', 'Administrador Zertica', 'admin@zertica.local',
-     '$2b$10$3PRylZIOY60.lwqvDe/JY.AmrmFkpM4jRupZa1vkoFTCQICZKsGNa', 'admin', 'es', 1),
-  ('usuario', 'Usuario de Prueba', 'usuario@zertica.local',
-     '$2b$10$SjbmqAJ5k0sTmD4XzaBkd.Lx30HNuxOMM1hxXAfxFMea8ZJnhtM7C', 'user', 'es', 1),
-  ('inactivo', 'Cuenta Desactivada', 'inactivo@zertica.local',
-     '$2b$10$Zi2dAkuyfFu1awDnpHFrFOmIJho4mUenYSTTncdejiD0Dv0SewNKi', 'user', 'es', 0);
+  ('admin', 'Administrador', 'admin@zertica.com',
+     '$2b$10$oBIu//ZDdG0L3Hk1jT1Zs.IUM.9VXEoC5K9obGmm54G8DSj4YR1vy', 'admin', 'es', 1),
+  ('juan', 'Juan García', 'juan@mail.com',
+     '$2b$10$7R5fPGxxGbLlI5M3zACnwecazJRox71Pb2f86piThjHIG86A6x0r.', 'user', 'es', 1),
+  ('maria', 'María López', 'maria@mail.com',
+     '$2b$10$7R5fPGxxGbLlI5M3zACnwecazJRox71Pb2f86piThjHIG86A6x0r.', 'user', 'es', 1),
+  ('pedro', 'Pedro Ramírez', 'pedro@mail.com',
+     '$2b$10$9rTOuZnAJZLf8VGY5Ayh7.Qx9hrFEPRYjsjmsgPrSkrm94IDnDIUy', 'user', 'es', 0);

@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
 import { Pressable, StyleSheet, Text, View, type TextInput } from 'react-native';
 import { Button } from '@/components/button';
@@ -9,20 +9,20 @@ import { useAuth } from '@/providers/auth-provider';
 import { colors, font } from '@/theme';
 import { AuthShell } from './auth-shell';
 
-/** CU-03 Iniciar sesión (usuario y contraseña). */
+/** CU-03 Iniciar sesión — pantalla "Iniciar sesión" de Figma. Acepta correo o usuario. */
 export function LoginScreen() {
   const { t, errorMessage, language, setLanguage } = useI18n();
   const { signIn, sessionNotice, clearSessionNotice } = useAuth();
-  const [username, setUsername] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ identifier?: string; password?: string }>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const passwordRef = useRef<ComponentRef<typeof TextInput>>(null);
 
   const submit = async () => {
     const next: typeof errors = {};
-    if (!username.trim()) next.username = t('validation.REQUIRED');
+    if (!identifier.trim()) next.identifier = t('validation.REQUIRED');
     if (!password) next.password = t('validation.REQUIRED');
     setErrors(next);
     setServerError(null);
@@ -30,7 +30,7 @@ export function LoginScreen() {
     if (Object.keys(next).length) return;
     setLoading(true);
     try {
-      await signIn(username.trim(), password);
+      await signIn(identifier.trim(), password);
     } catch (err) {
       setServerError(errorMessage(err));
     } finally {
@@ -45,25 +45,24 @@ export function LoginScreen() {
       <Notice tone="info" message={notice} />
       <Notice message={serverError} />
       <TextField
-        label={t('auth.username')}
-        placeholder={t('auth.usernamePlaceholder')}
-        icon="account-outline"
-        value={username}
-        onChangeText={setUsername}
+        label={t('auth.identifier')}
+        placeholder={t('auth.identifierPlaceholder')}
+        value={identifier}
+        onChangeText={setIdentifier}
         autoCapitalize="none"
         autoCorrect={false}
+        keyboardType="email-address"
         autoComplete="username"
         textContentType="username"
         returnKeyType="next"
         onSubmitEditing={() => passwordRef.current?.focus()}
-        error={errors.username}
+        error={errors.identifier}
         testID="login-username"
       />
       <TextField
         ref={passwordRef}
         label={t('auth.password')}
         placeholder={t('auth.passwordPlaceholder')}
-        icon="lock-outline"
         secure
         value={password}
         onChangeText={setPassword}
@@ -81,7 +80,14 @@ export function LoginScreen() {
           </Pressable>
         </Link>
       </View>
-      <Button title={t('auth.login')} onPress={submit} loading={loading} testID="login-submit" />
+      <Button title={t('auth.loginAsUser')} onPress={submit} loading={loading} testID="login-submit" />
+      <Button
+        title={`🛡️  ${t('auth.adminAccess')}`}
+        variant="secondary"
+        onPress={() => router.push('/admin-login')}
+        style={styles.adminBtn}
+        testID="login-admin"
+      />
       <View style={styles.footer}>
         <Text style={styles.muted}>{t('auth.noAccount')} </Text>
         <Link href="/register" asChild>
@@ -98,10 +104,11 @@ export function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  forgotRow: { alignItems: 'flex-end', marginTop: -4, marginBottom: 20 },
-  link: { color: colors.orange, fontWeight: font.bold, fontSize: 13 },
+  forgotRow: { alignItems: 'flex-end', marginTop: -2, marginBottom: 22 },
+  link: { color: colors.orange, fontWeight: font.bold, fontSize: 14 },
+  adminBtn: { marginTop: 12 },
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 24 },
-  muted: { color: colors.textMuted, fontSize: 14 },
-  lang: { alignSelf: 'center', marginTop: 22, padding: 6 },
-  langText: { color: colors.navy700, fontSize: 13, fontWeight: font.semibold, textDecorationLine: 'underline' },
+  muted: { color: colors.textMuted, fontSize: 15 },
+  lang: { alignSelf: 'center', marginTop: 18, padding: 6 },
+  langText: { color: colors.navy800, fontSize: 13, fontWeight: font.semibold },
 });

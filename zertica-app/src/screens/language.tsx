@@ -7,7 +7,7 @@ import { Button } from '@/components/button';
 import { Icon } from '@/components/icon';
 import { Logo } from '@/components/logo';
 import { Notice } from '@/components/notice';
-import { ScreenHeader } from '@/components/screen-header';
+import { SubpageHeader } from '@/components/screen-header';
 import { useI18n } from '@/i18n';
 import { useAuth } from '@/providers/auth-provider';
 import { colors, font, radius } from '@/theme';
@@ -24,7 +24,7 @@ const OPTIONS: { code: Language; flag: string; label: string }[] = [
  */
 export function LanguageScreen({ mode }: { mode: 'onboarding' | 'settings' }) {
   const { t, language, setLanguage, previewLanguage, errorMessage } = useI18n();
-  const { changeLanguage } = useAuth();
+  const { changeLanguage, user } = useAuth();
   const [selected, setSelected] = useState<Language>(language);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +80,7 @@ export function LanguageScreen({ mode }: { mode: 'onboarding' | 'settings' }) {
   if (mode === 'settings') {
     return (
       <View style={styles.flex}>
-        <ScreenHeader title={t('language.screenTitle')} back />
+        <SubpageHeader context={t('profile.title')} contextSubtitle={user?.fullName} title={t('language.screenTitle')} />
         <View style={styles.settingsBody}>
           <Notice message={error} />
           {options}

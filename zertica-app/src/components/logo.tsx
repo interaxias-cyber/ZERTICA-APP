@@ -22,7 +22,7 @@ export function Logo({ size = 72, showName = false }: { size?: number; showName?
 const styles = StyleSheet.create({
   wrap: { alignItems: 'center' },
   badge: { overflow: 'hidden', backgroundColor: colors.navy, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  names: { alignItems: 'center', marginTop: 12 },
-  name: { color: colors.white, fontSize: 24, fontWeight: font.heavy },
-  tagline: { color: colors.textOnDarkMuted, fontSize: 13, marginTop: 2 },
+  names: { alignItems: 'center', marginTop: 16 },
+  name: { color: colors.white, fontSize: 28, fontWeight: font.heavy },
+  tagline: { color: colors.textOnDarkMuted, fontSize: 15, marginTop: 2 },
 });

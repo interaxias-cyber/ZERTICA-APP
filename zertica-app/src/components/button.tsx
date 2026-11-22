@@ -2,7 +2,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, t
 import { colors, font, radius } from '@/theme';
 import { Icon, type IconName } from './icon';
 
-type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'dangerSolid' | 'light';
 
 interface Props {
   title: string;
@@ -21,7 +21,9 @@ const palette: Record<Variant, { bg: string; fg: string; border?: string; presse
   secondary: { bg: colors.navy, fg: colors.white, pressed: colors.navy700 },
   outline: { bg: 'transparent', fg: colors.navy, border: colors.border, pressed: colors.navy100 },
   ghost: { bg: 'transparent', fg: colors.orange, pressed: colors.orange100 },
-  danger: { bg: colors.dangerBg, fg: colors.danger, pressed: '#F8D4D4' },
+  danger: { bg: colors.dangerBg, fg: colors.danger, pressed: '#FCD0D0' },
+  dangerSolid: { bg: colors.dangerSolid, fg: colors.white, pressed: '#DC2626' },
+  light: { bg: colors.chip, fg: colors.navy, pressed: colors.border },
 };
 
 export function Button({ title, onPress, variant = 'primary', loading, disabled, icon, size = 'md', style, testID }: Props) {
@@ -55,7 +57,7 @@ export function Button({ title, onPress, variant = 'primary', loading, disabled,
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 50,
+    minHeight: 52,
     borderRadius: radius.md,
     paddingHorizontal: 18,
     alignItems: 'center',

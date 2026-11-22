@@ -58,13 +58,13 @@ export const TextField = forwardRef<ComponentRef<typeof TextInput>, Props>(funct
 
 const styles = StyleSheet.create({
   wrap: { marginBottom: 14 },
-  label: { fontSize: 13, fontWeight: font.semibold, color: '#4A5468', marginBottom: 6 },
+  label: { fontSize: 13, fontWeight: font.semibold, color: colors.textMuted, marginBottom: 6 },
   box: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    minHeight: 50,
-    paddingHorizontal: 14,
+    minHeight: 54,
+    paddingHorizontal: 16,
     backgroundColor: colors.field,
     borderRadius: radius.md,
     borderWidth: 1,

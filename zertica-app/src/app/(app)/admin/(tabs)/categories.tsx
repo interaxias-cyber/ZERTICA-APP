@@ -1,5 +1,5 @@
 import { AdminCategoriesScreen } from '@/screens/admin/categories';
 
-export default function AdminCategoriesRoute() {
+export default function Route() {
   return <AdminCategoriesScreen />;
 }

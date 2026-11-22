@@ -28,6 +28,13 @@ async function main() {
       await connection.query(sql);
       console.log(`✔ ${file} ejecutado`);
     }
+    if (withSeed) {
+      const from = path.join(__dirname, '..', 'database', 'seed-images');
+      const to = path.join(__dirname, '..', process.env.UPLOADS_DIR || 'uploads', 'products');
+      fs.mkdirSync(to, { recursive: true });
+      for (const name of fs.readdirSync(from)) fs.copyFileSync(path.join(from, name), path.join(to, name));
+      console.log('✔ imágenes de prueba copiadas a uploads/products');
+    }
   } finally {
     await connection.end();
   }

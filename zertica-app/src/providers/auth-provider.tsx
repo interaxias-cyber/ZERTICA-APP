@@ -15,7 +15,10 @@ interface AuthValue {
   /** Código del motivo por el que se cerró la sesión (vencida, cuenta desactivada…). */
   sessionNotice: string | null;
   clearSessionNotice: () => void;
-  signIn: (username: string, password: string) => Promise<void>;
+  /** admin = true: acceso administrativo; rechaza cuentas sin rol admin. */
+  signIn: (identifier: string, password: string, options?: { admin?: boolean }) => Promise<void>;
+  /** Zona a la que entra tras iniciar sesión (/admin para el acceso administrativo). */
+  landing: '/' | '/admin';
   register: (input: Omit<RegisterInput, 'language'>) => Promise<void>;
   signOut: () => Promise<void>;
   updateUser: (user: User) => Promise<void>;
@@ -30,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<Status>('loading');
   const [user, setUser] = useState<User | null>(null);
   const [sessionNotice, setSessionNotice] = useState<string | null>(null);
+  const [landing, setLanding] = useState<'/' | '/admin'>('/');
   const signingOut = useRef(false);
 
   const clearLocalSession = useCallback(async () => {
@@ -66,7 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setAuthToken(token);
       try {
-        setUser(JSON.parse(rawUser));
+        const cached: User = JSON.parse(rawUser);
+        setUser(cached);
+        setLanding(cached.role === 'admin' ? '/admin' : '/');
         setStatus('signedIn');
       } catch {
         await clearLocalSession();
@@ -101,12 +107,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clearLocalSession]);
 
   const signIn = useCallback(
-    async (username: string, password: string) => persistSession(await authApi.login(username, password)),
+    async (identifier: string, password: string, options?: { admin?: boolean }) => {
+      const session = await authApi.login(identifier, password);
+      if (options?.admin && session.user.role !== 'admin') {
+        throw new ApiError(403, 'NOT_ADMIN', 'Not an administrator');
+      }
+      setLanding(options?.admin ? '/admin' : '/');
+      await persistSession(session);
+    },
     [persistSession],
   );
 
   const register = useCallback(
-    async (input: Omit<RegisterInput, 'language'>) => persistSession(await authApi.register({ ...input, language })),
+    async (input: Omit<RegisterInput, 'language'>) => {
+      setLanding('/');
+      await persistSession(await authApi.register({ ...input, language }));
+    },
     [persistSession, language],
   );
 
@@ -142,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       status,
       user,
       isAdmin: user?.role === 'admin',
+      landing,
       sessionNotice,
       clearSessionNotice: () => setSessionNotice(null),
       signIn,
@@ -150,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updateUser,
       changeLanguage,
     }),
-    [status, user, sessionNotice, signIn, register, signOut, updateUser, changeLanguage],
+    [status, user, landing, sessionNotice, signIn, register, signOut, updateUser, changeLanguage],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

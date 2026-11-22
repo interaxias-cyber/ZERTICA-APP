@@ -2,26 +2,28 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import type { AdminProduct, StatusFilter } from '@/api/types';
-import { Button } from '@/components/button';
+import { StatusChips } from '@/components/filter-chips';
+import { IconAction } from '@/components/icon-action';
 import { ProductImage } from '@/components/product-image';
-import { HeaderIconButton, ScreenHeader } from '@/components/screen-header';
+import { HeaderPill } from '@/components/screen-header';
 import { SearchInput } from '@/components/search-input';
-import { Segmented } from '@/components/segmented';
 import { EmptyView, ErrorView, LoadingView } from '@/components/state-views';
 import { StatusBadge, Tag } from '@/components/status-badge';
-import { useAdminProducts, useProductStatus } from '@/hooks/use-admin';
+import { useAdminProducts, useAdminSummary, useProductStatus } from '@/hooks/use-admin';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useI18n } from '@/i18n';
 import { confirmAction, showMessage } from '@/lib/confirm';
 import { colors, font, radius, shadow } from '@/theme';
+import { AdminHeader } from './admin-header';
 
-/** CU-16 listado (activos y desactivados), CU-19 desactivar, CU-20 reactivar. */
+/** Pantalla "Productos" del panel (Figma). CU-16 listado, CU-19 desactivar, CU-20 reactivar. */
 export function AdminProductsScreen() {
   const { t, errorMessage } = useI18n();
   const [searchText, setSearchText] = useState('');
   const [status, setStatus] = useState<StatusFilter>('all');
   const search = useDebouncedValue(searchText.trim(), 400);
   const query = useAdminProducts({ search: search || undefined, status });
+  const summary = useAdminSummary();
   const toggle = useProductStatus();
   const [busyId, setBusyId] = useState<number | null>(null);
   const items = useMemo(() => query.data?.pages.flatMap((p) => p.data) ?? [], [query.data]);
@@ -47,26 +49,19 @@ export function AdminProductsScreen() {
     }
   };
 
+  const openNew = () => router.push('/admin/products/new');
+
   return (
     <View style={styles.flex}>
-      <ScreenHeader
+      <AdminHeader
         title={t('admin.products')}
-        subtitle={query.data ? t('common.results', { count: query.data.pages[0].meta.total }) : undefined}
-        back
-        right={<HeaderIconButton icon="plus" accent label={t('admin.newProduct')} onPress={() => router.push('/admin/products/new')} />}>
-        <View style={styles.controls}>
-          <SearchInput value={searchText} onChangeText={setSearchText} placeholder={t('admin.searchProducts')} />
-          <Segmented
-            value={status}
-            onChange={setStatus}
-            options={[
-              { value: 'all', label: t('common.all') },
-              { value: 'active', label: t('common.active') },
-              { value: 'inactive', label: t('common.inactive') },
-            ]}
-          />
-        </View>
-      </ScreenHeader>
+        subtitle={summary.data ? t('adminHome.productsSubtitle', { count: summary.data.products.active }) : undefined}
+        actions={<HeaderPill label={t('adminHome.newShort')} onPress={openNew} />}
+      />
+      <View style={styles.controls}>
+        <SearchInput value={searchText} onChangeText={setSearchText} placeholder={t('admin.searchProducts')} />
+        <StatusChips value={status} onChange={setStatus} />
+      </View>
 
       {query.isPending ? (
         <LoadingView />
@@ -80,37 +75,48 @@ export function AdminProductsScreen() {
           ListEmptyComponent={<EmptyView title={t('admin.emptyProducts')} />}
           renderItem={({ item }) => (
             <Pressable
-              style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}
+              style={({ pressed }) => [styles.row, pressed && { opacity: 0.9 }]}
               onPress={() => router.push({ pathname: '/admin/products/[id]', params: { id: String(item.id) } })}
-              accessibilityRole="button">
-              <ProductImage uri={item.imageUrl} categoryName={item.category.name} style={styles.thumb} iconSize={24} />
+              accessibilityRole="button"
+              accessibilityLabel={item.name}>
+              <ProductImage uri={item.imageUrl} categoryName={item.category.name} style={styles.thumb} iconSize={22} />
               <View style={styles.rowBody}>
                 <Text style={styles.name} numberOfLines={1}>
                   {item.name}
                 </Text>
                 <Text style={styles.meta} numberOfLines={1}>
-                  {item.reference} · {item.brand.name}
+                  {item.category.name} · {item.reference}
                 </Text>
-                <View style={styles.tags}>
-                  <StatusBadge active={item.isActive} />
-                  {!item.category.isActive ? <Tag label={t('admin.inactiveCategoryTag')} tone="muted" /> : null}
+                {!item.category.isActive ? (
+                  <View style={{ marginTop: 4 }}>
+                    <Tag label={t('admin.inactiveCategoryTag')} tone="warning" />
+                  </View>
+                ) : null}
+              </View>
+              <View style={styles.side}>
+                <StatusBadge active={item.isActive} />
+                <View style={styles.actions}>
+                  <IconAction
+                    icon="pencil"
+                    tone="info"
+                    label={t('common.edit')}
+                    onPress={() => router.push({ pathname: '/admin/products/[id]', params: { id: String(item.id) } })}
+                  />
+                  <IconAction
+                    icon={item.isActive ? 'eye-off-outline' : 'eye-outline'}
+                    tone={item.isActive ? 'danger' : 'success'}
+                    label={item.isActive ? t('common.deactivate') : t('common.reactivate')}
+                    loading={busyId === item.id}
+                    onPress={() => onToggle(item)}
+                  />
                 </View>
               </View>
-              <Button
-                title={item.isActive ? t('common.deactivate') : t('common.reactivate')}
-                variant={item.isActive ? 'danger' : 'outline'}
-                size="sm"
-                loading={busyId === item.id}
-                onPress={() => onToggle(item)}
-              />
             </Pressable>
           )}
           onEndReachedThreshold={0.4}
           onEndReached={() => query.hasNextPage && !query.isFetchingNextPage && query.fetchNextPage()}
           ListFooterComponent={query.isFetchingNextPage ? <ActivityIndicator color={colors.orange} style={{ margin: 16 }} /> : undefined}
-          refreshControl={
-            <RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} colors={[colors.orange]} />
-          }
+          refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} colors={[colors.orange]} />}
           keyboardDismissMode="on-drag"
         />
       )}
@@ -120,20 +126,21 @@ export function AdminProductsScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
-  controls: { gap: 10, marginTop: 12 },
-  list: { padding: 16, gap: 10, flexGrow: 1 },
+  controls: { paddingHorizontal: 16, paddingTop: 16, gap: 12 },
+  list: { padding: 16, gap: 12, flexGrow: 1 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
     backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: 10,
+    borderRadius: radius.md,
+    padding: 14,
     ...shadow.card,
   },
-  thumb: { width: 60, height: 60, borderRadius: radius.md },
-  rowBody: { flex: 1, gap: 2 },
-  name: { fontSize: 14, fontWeight: font.bold, color: colors.text },
-  meta: { fontSize: 12, color: colors.textMuted },
-  tags: { flexDirection: 'row', gap: 6, marginTop: 4, flexWrap: 'wrap' },
+  thumb: { width: 52, height: 52, borderRadius: 10 },
+  rowBody: { flex: 1 },
+  name: { fontSize: 16, fontWeight: font.bold, color: colors.text },
+  meta: { fontSize: 13, color: colors.textMuted, marginTop: 2 },
+  side: { alignItems: 'flex-end', gap: 8 },
+  actions: { flexDirection: 'row', gap: 6 },
 });

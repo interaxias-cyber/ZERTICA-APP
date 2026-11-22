@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ApiError } from '@/api/client';
 import { Button } from '@/components/button';
 import { Notice } from '@/components/notice';
+import { PasswordRules } from '@/components/password-rules';
 import { TextField } from '@/components/text-field';
 import { useI18n } from '@/i18n';
 import { apiFieldErrors, EMAIL_RE, PASSWORD_RE, USERNAME_RE, type FieldErrors } from '@/lib/forms';
@@ -68,7 +69,6 @@ export function RegisterScreen() {
       <TextField
         label={t('auth.fullName')}
         placeholder={t('auth.fullNamePlaceholder')}
-        icon="card-account-details-outline"
         value={form.fullName}
         onChangeText={set('fullName')}
         autoComplete="name"
@@ -77,7 +77,6 @@ export function RegisterScreen() {
       <TextField
         label={t('auth.username')}
         placeholder={t('auth.usernamePlaceholder')}
-        icon="account-outline"
         value={form.username}
         onChangeText={set('username')}
         autoCapitalize="none"
@@ -88,7 +87,6 @@ export function RegisterScreen() {
       <TextField
         label={t('auth.email')}
         placeholder={t('auth.emailPlaceholder')}
-        icon="email-outline"
         value={form.email}
         onChangeText={set('email')}
         autoCapitalize="none"
@@ -99,18 +97,16 @@ export function RegisterScreen() {
       <TextField
         label={t('auth.password')}
         placeholder={t('auth.passwordPlaceholder')}
-        icon="lock-outline"
         secure
         value={form.password}
         onChangeText={set('password')}
         autoComplete="new-password"
-        hint={t('auth.passwordHint')}
         error={errors.password}
       />
+      <PasswordRules value={form.password} />
       <TextField
         label={t('auth.confirmPassword')}
         placeholder={t('auth.passwordPlaceholder')}
-        icon="lock-check-outline"
         secure
         value={form.confirm}
         onChangeText={set('confirm')}

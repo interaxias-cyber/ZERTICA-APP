@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { authApi } from '@/api/auth';
 import { Button } from '@/components/button';
 import { Notice } from '@/components/notice';
+import { PasswordRules } from '@/components/password-rules';
 import { TextField } from '@/components/text-field';
 import { useI18n } from '@/i18n';
 import { apiFieldErrors, PASSWORD_RE, type FieldErrors } from '@/lib/forms';
@@ -54,7 +55,6 @@ export function ResetPasswordScreen() {
           <TextField
             label={t('auth.code')}
             placeholder={t('auth.codePlaceholder')}
-            icon="key-outline"
             value={token}
             onChangeText={setToken}
             autoCapitalize="none"
@@ -64,17 +64,15 @@ export function ResetPasswordScreen() {
           <TextField
             label={t('auth.newPassword')}
             placeholder={t('auth.passwordPlaceholder')}
-            icon="lock-outline"
             secure
             value={password}
             onChangeText={setPassword}
-            hint={t('auth.passwordHint')}
             error={errors.password}
           />
+          <PasswordRules value={password} />
           <TextField
             label={t('auth.confirmPassword')}
             placeholder={t('auth.passwordPlaceholder')}
-            icon="lock-check-outline"
             secure
             value={confirm}
             onChangeText={setConfirm}

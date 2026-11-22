@@ -47,7 +47,15 @@ export interface AdminProductQuery {
   page?: number;
 }
 
+export interface AdminSummary {
+  products: { total: number; active: number; inactive: number; withoutImage: number };
+  categories: { total: number; active: number; inactive: number };
+  brands: { total: number };
+  users: { total: number; active: number; inactive: number; admins: number };
+}
+
 export const adminApi = {
+  summary: () => request<{ data: AdminSummary }>('/admin/summary').then((r) => r.data),
   products: ({ search, status = 'all', categoryId, page = 1 }: AdminProductQuery) =>
     request<Paginated<AdminProduct>>('/admin/products', {
       query: { search: search?.trim(), status, category_id: categoryId, page, limit: PAGE_SIZE },

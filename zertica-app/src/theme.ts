@@ -4,33 +4,41 @@
  * azul marino (principal), naranja (acento), blanco y gris claro.
  */
 export const colors = {
-  navy: '#081B39',
-  navy800: '#0F2649',
-  navy700: '#1B3561',
-  navy100: '#E6EBF3',
-  orange: '#F08F2B',
-  orangeDark: '#D97814',
-  orange100: '#FDEEDC',
+  // Valores tomados del diseño de Figma (24 pantallas).
+  navy: '#0F2044',
+  navy800: '#1A3060',
+  navy700: '#24407A',
+  navy100: '#E6EAF2',
+  orange: '#F5811E',
+  orangeDark: '#DC6D0C',
+  orange100: '#FDF0E6',
   white: '#FFFFFF',
-  background: '#F3F4F6',
+  background: '#F0F0F0',
   surface: '#FFFFFF',
   field: '#FFFFFF',
-  border: '#E3E6EB',
+  chip: '#F3F4F6',
+  border: '#E5E7EB',
   divider: '#ECEEF2',
-  text: '#0B1A33',
-  textMuted: '#6B7588',
+  text: '#0F2044',
+  textBody: '#374151',
+  textMuted: '#6B7280',
   textOnDark: '#FFFFFF',
-  textOnDarkMuted: '#A9B4C7',
-  success: '#1F9D55',
-  successBg: '#E3F6EB',
-  danger: '#D64545',
-  dangerBg: '#FCE8E8',
-  overlay: 'rgba(8, 27, 57, 0.45)',
+  textOnDarkMuted: '#A8B3C8',
+  success: '#065F46',
+  successBg: '#D1FAE5',
+  warning: '#92400E',
+  warningBg: '#FEF3C7',
+  danger: '#B91C1C',
+  dangerSolid: '#EF4444',
+  dangerBg: '#FEE2E2',
+  info: '#1D4ED8',
+  infoBg: '#DBEAFE',
+  overlay: 'rgba(15, 32, 68, 0.45)',
 } as const;
 
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24, xxxl: 32 } as const;
 
-export const radius = { sm: 8, md: 12, lg: 16, xl: 22, pill: 999 } as const;
+export const radius = { sm: 8, md: 14, lg: 16, xl: 22, pill: 999 } as const;
 
 export const font = {
   regular: '400',
@@ -51,9 +59,9 @@ export const type = {
 
 export const shadow = {
   card: {
-    boxShadow: '0px 2px 10px rgba(8, 27, 57, 0.08)',
+    boxShadow: '0px 2px 8px rgba(15, 32, 68, 0.06)',
   },
   raised: {
-    boxShadow: '0px 6px 18px rgba(8, 27, 57, 0.16)',
+    boxShadow: '0px 8px 20px rgba(245, 129, 30, 0.25)',
   },
 } as const;

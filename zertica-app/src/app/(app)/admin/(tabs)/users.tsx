@@ -1,5 +1,5 @@
 import { AdminUsersScreen } from '@/screens/admin/users';
 
-export default function AdminUsersRoute() {
+export default function Route() {
   return <AdminUsersScreen />;
 }

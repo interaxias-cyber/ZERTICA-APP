@@ -3,6 +3,7 @@ import { adminApi, type AdminProductQuery, type ProductInput } from '@/api/admin
 import type { StatusFilter } from '@/api/types';
 
 export const adminKeys = {
+  summary: ['admin', 'summary'] as const,
   products: (q: Omit<AdminProductQuery, 'page'>) => ['admin', 'products', q] as const,
   product: (id: number) => ['admin', 'product', id] as const,
   categories: ['admin', 'categories'] as const,
@@ -91,7 +92,11 @@ export function useUserStatus() {
     mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) => adminApi.setUserStatus(id, isActive),
     onSuccess: (user) => {
       qc.setQueryData(adminKeys.user(user.id), user);
-      return qc.invalidateQueries({ queryKey: ['admin', 'users'] });
+      return Promise.all([qc.invalidateQueries({ queryKey: ['admin', 'users'] }), qc.invalidateQueries({ queryKey: ['admin', 'summary'] })]);
     },
   });
+}
+
+export function useAdminSummary() {
+  return useQuery({ queryKey: adminKeys.summary, queryFn: adminApi.summary });
 }

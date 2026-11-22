@@ -1,5 +1,5 @@
 import { AdminHomeScreen } from '@/screens/admin/admin-home';
 
-export default function AdminRoute() {
+export default function Route() {
   return <AdminHomeScreen />;
 }
