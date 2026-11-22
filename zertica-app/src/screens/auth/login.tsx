@@ -105,9 +105,14 @@ export function LoginScreen() {
           </Pressable>
         </Link>
       </View>
-      <Pressable style={styles.lang} onPress={() => setLanguage(language === 'es' ? 'en' : 'es')} accessibilityRole="button">
-        <Text style={styles.langText}>🌐 {language === 'es' ? 'English' : 'Español'}</Text>
-      </Pressable>
+      <View style={styles.bottomLinks}>
+        <Pressable style={styles.lang} onPress={() => setLanguage(language === 'es' ? 'en' : 'es')} accessibilityRole="button">
+          <Text style={styles.langText}>🌐 {language === 'es' ? 'English' : 'Español'}</Text>
+        </Pressable>
+        <Pressable style={styles.lang} onPress={() => router.push('/server')} accessibilityRole="button" testID="login-server">
+          <Text style={styles.langText}>⚙️ {t('server.link')}</Text>
+        </Pressable>
+      </View>
     </AuthShell>
   );
 }
@@ -119,6 +124,7 @@ const styles = StyleSheet.create({
   companyBtn: { backgroundColor: colors.navy800, borderColor: colors.navy800 },
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 24 },
   muted: { color: colors.textMuted, fontSize: 15 },
-  lang: { alignSelf: 'center', marginTop: 18, padding: 6 },
+  bottomLinks: { flexDirection: 'row', justifyContent: 'center', gap: 24, marginTop: 18 },
+  lang: { padding: 6 },
   langText: { color: colors.navy800, fontSize: 13, fontWeight: font.semibold },
 });

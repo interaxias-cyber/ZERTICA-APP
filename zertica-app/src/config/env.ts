@@ -3,7 +3,9 @@ import { Platform } from 'react-native';
 
 /**
  * Dirección del backend.
- * 1. EXPO_PUBLIC_API_URL (archivo .env) — siempre tiene prioridad.
+ * 0. La que el usuario guarde en la pantalla "Servidor" (APK instalado en un
+ *    teléfono: se escribe la IP del PC donde corre el backend).
+ * 1. EXPO_PUBLIC_API_URL (archivo .env) al compilar.
  * 2. En desarrollo: la IP del equipo que ejecuta Metro (sirve para dispositivo
  *    físico en la misma Wi-Fi y para el emulador).
  * 3. Emulador Android: 10.0.2.2 apunta al localhost del equipo.
@@ -28,7 +30,32 @@ function resolveApiUrl(): string {
   return `http://localhost:${API_PORT}/api`;
 }
 
-export const API_URL = resolveApiUrl();
+/** Dirección por defecto de esta compilación (sin la configurada por el usuario). */
+export const DEFAULT_API_URL = resolveApiUrl();
+
+let override: string | null = null;
+
+/** Dirección efectiva del backend. */
+export function getApiUrl(): string {
+  return override ?? DEFAULT_API_URL;
+}
+
+/** Fija (o quita, con null) la dirección configurada por el usuario. */
+export function setApiUrlOverride(url: string | null) {
+  override = url ? normalizeApiUrl(url) : null;
+}
+
+/** "192.168.1.50" → "http://192.168.1.50:3000/api"; respeta lo que ya venga completo. */
+export function normalizeApiUrl(input: string): string {
+  let url = input.trim().replace(/\/+$/, '');
+  if (!/^https?:\/\//i.test(url)) url = `http://${url}`;
+  const m = /^(https?:\/\/[^/]+)(\/.*)?$/i.exec(url);
+  if (!m) return url;
+  let origin = m[1];
+  const path = m[2] ?? '';
+  if (!/:\d+$/.test(origin) && origin.startsWith('http://')) origin = `${origin}:${API_PORT}`;
+  return `${origin}${path || '/api'}`;
+}
 
 /** Tiempo máximo de espera por petición (conexiones lentas). */
 export const REQUEST_TIMEOUT_MS = Number(process.env.EXPO_PUBLIC_REQUEST_TIMEOUT_MS) || 20000;

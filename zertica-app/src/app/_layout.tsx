@@ -2,7 +2,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { router, useSegments } from 'expo-router';
 import { Stack } from 'expo-router/stack';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { setApiUrlOverride } from '@/config/env';
+import { storage, STORAGE_KEYS } from '@/lib/storage';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nProvider, useI18n } from '@/i18n';
@@ -70,6 +72,17 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
+  // Carga la dirección del servidor configurada en el teléfono antes de la primera petición.
+  const [serverLoaded, setServerLoaded] = useState(false);
+  useEffect(() => {
+    storage
+      .get(STORAGE_KEYS.apiUrl)
+      .then((url) => setApiUrlOverride(url))
+      .catch(() => {})
+      .finally(() => setServerLoaded(true));
+  }, []);
+  if (!serverLoaded) return null;
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

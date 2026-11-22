@@ -42,4 +42,5 @@ export const STORAGE_KEYS = {
   token: 'zertica.session.token',
   user: 'zertica.session.user',
   language: 'zertica.language',
+  apiUrl: 'zertica.apiUrl',
 } as const;

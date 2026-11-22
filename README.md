@@ -171,7 +171,21 @@ Todas las rutas cuelgan de `/api`. Errores uniformes: `{ "error": { "code", "mes
 | `GET /admin/reports?month=AAAA-MM` · `GET /admin/reports/export.csv` | admin | Reportes y exportación |
 | `/admin/products` · `/admin/categories` · `/admin/users` | admin | Gestión (listar, crear, editar, activar/desactivar, imagen) |
 
-## 7. Generar el APK
+## 7. APK para el celular
+
+### 7.1 Instalar el APK ya compilado
+
+En las *Releases* del repositorio hay un `zertica-<versión>.apk` (Android 7.0 o superior, teléfonos ARM de 64 bits).
+
+1. En el PC, arranca MySQL y el backend (`npm run dev` en `zertica-backend`). El backend escucha en `0.0.0.0:3000`.
+2. Averigua la IP del PC en la red Wi-Fi (`ipconfig` en Windows, `ip addr` / `ifconfig` en Linux/macOS), p. ej. `192.168.1.50`. Si hace falta, permite el puerto 3000 en el firewall.
+3. Pasa el APK al celular (cable, Drive, WhatsApp…), ábrelo y acepta "instalar apps de origen desconocido".
+4. Con el celular en la **misma Wi-Fi**, abre Zertica → elige idioma → en el inicio de sesión toca **⚙️ Servidor**, escribe la IP (`192.168.1.50`) y pulsa **Probar conexión**. Debe decir "Conexión correcta". Pulsa **Guardar**.
+5. Inicia sesión con un usuario de prueba (sección 4).
+
+La dirección queda guardada en el teléfono; se cambia cuando quieras desde la misma pantalla. Para que las fotos de productos carguen en el celular, define `PUBLIC_BASE_URL=http://<IP-del-PC>:3000` en el `.env` del backend (o déjalo vacío: se usa la dirección con la que llega cada petición).
+
+### 7.2 Compilarlo tú mismo
 
 **Opción A — EAS Build (en la nube, sin Android Studio):**
 
@@ -180,23 +194,19 @@ cd zertica-app
 npm install -g eas-cli
 eas login
 eas init                                   # vincula el proyecto a tu cuenta Expo (solo la primera vez)
-# Edita eas.json → build.preview.env.EXPO_PUBLIC_API_URL con la URL de tu backend
 eas build --platform android --profile preview
 ```
 
-Al terminar, EAS muestra un enlace para descargar el `.apk` e instalarlo en el teléfono.
-
-**Opción B — Compilación local (Android Studio + JDK 17):**
+**Opción B — Local (JDK 17+ y Android SDK con build-tools 37 y NDK 27.1):**
 
 ```bash
 cd zertica-app
-echo "EXPO_PUBLIC_API_URL=http://192.168.1.50:3000/api" > .env   # URL que usará el APK
 npx expo prebuild --platform android --clean
-cd android && ./gradlew assembleRelease
+cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
 # APK: android/app/build/outputs/apk/release/app-release.apk
 ```
 
-La variante `release` generada por Expo se firma con la clave de depuración, válida para instalar y probar. Para publicar en Google Play, configura tu propia clave de firma (ver la documentación de Expo).
+Si fijas `EXPO_PUBLIC_API_URL` en `.env` antes de compilar, ese será el servidor por defecto; si no, se configura en la app con **⚙️ Servidor**. La variante `release` se firma con la clave de depuración, válida para instalar y probar; para Google Play hay que usar tu propia clave de firma.
 
 ## 8. Pruebas realizadas
 

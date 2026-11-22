@@ -1,4 +1,4 @@
-import { API_URL, REQUEST_TIMEOUT_MS } from '@/config/env';
+import { getApiUrl, REQUEST_TIMEOUT_MS } from '@/config/env';
 import type { FieldError } from './types';
 
 /** Error normalizado: el `code` coincide con el de la API (RN18) o es de red. */
@@ -52,7 +52,7 @@ function buildUrl(path: string, query?: Query) {
     .filter(([, v]) => v !== undefined && v !== null && v !== '')
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
     .join('&');
-  return `${API_URL}${path}${qs ? `?${qs}` : ''}`;
+  return `${getApiUrl()}${path}${qs ? `?${qs}` : ''}`;
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
