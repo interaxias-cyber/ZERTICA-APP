@@ -185,7 +185,24 @@ En las *Releases* del repositorio hay un `zertica-<versión>.apk` (Android 7.0 o
 
 La dirección queda guardada en el teléfono; se cambia cuando quieras desde la misma pantalla. Para que las fotos de productos carguen en el celular, define `PUBLIC_BASE_URL=http://<IP-del-PC>:3000` en el `.env` del backend (o déjalo vacío: se usa la dirección con la que llega cada petición).
 
-### 7.2 Compilarlo tú mismo
+### 7.2 Todo en el celular, sin PC (Termux)
+
+El backend y la base de datos también pueden correr **dentro del propio celular** con [Termux](https://f-droid.org/packages/com.termux/). En ese caso se usa MariaDB, compatible con MySQL; las 25 pruebas del backend pasan igual con MariaDB. Funciona sin PC y sin internet.
+
+1. Instala **Termux desde F-Droid** (la versión de Google Play está desactualizada).
+2. Abre Termux y ejecuta (una sola vez; tarda 10–20 minutos):
+
+   ```bash
+   curl -fsSLo setup.sh https://raw.githubusercontent.com/interaxias-cyber/ZERTICA-APP/main/zertica-backend/scripts/termux-setup.sh && bash setup.sh
+   ```
+
+   Instala Node.js, MariaDB y Git, descarga el proyecto, crea la base `zertica` con los datos de prueba y deja los comandos `zertica` y `zertica-reset`.
+3. Cierra y abre Termux, y escribe `zertica` (arranca MariaDB y el backend).
+4. En la app: **⚙️ Servidor** → `127.0.0.1` → **Probar conexión** → **Guardar**.
+
+Cada vez que quieras usar la app: abre Termux, escribe `zertica` y deja Termux en segundo plano. Para que Android no lo cierre: Ajustes → Aplicaciones → Termux → Batería → **Sin restricciones**. `zertica-reset` vuelve a los datos de prueba (borra lo que hayas creado).
+
+### 7.3 Compilarlo tú mismo
 
 **Opción A — EAS Build (en la nube, sin Android Studio):**
 

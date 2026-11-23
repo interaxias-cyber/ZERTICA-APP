@@ -23,6 +23,8 @@ module.exports = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME,
+    // Opcional: socket local (p. ej. MariaDB en Termux). Si se define, se usa en lugar de host/puerto.
+    socketPath: process.env.DB_SOCKET || undefined,
   },
   jwt: {
     secret: process.env.JWT_SECRET,
