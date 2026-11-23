@@ -10,15 +10,15 @@ DATADIR="$PREFIX/var/lib/mysql"
 # Evita que Android suspenda Termux mientras el backend está encendido.
 command -v termux-wake-lock > /dev/null && termux-wake-lock
 
-if ! mariadb-admin ping --silent 2>/dev/null; then
+if ! mariadb-admin ping --silent > /dev/null 2>/dev/null; then
   printf '▶ Iniciando MariaDB...\n'
   (mariadbd-safe --datadir="$DATADIR" > /dev/null 2>&1 &)
   for i in $(seq 1 30); do
-    mariadb-admin ping --silent 2>/dev/null && break
+    mariadb-admin ping --silent > /dev/null 2>/dev/null && break
     sleep 1
   done
 fi
-mariadb-admin ping --silent 2>/dev/null || { echo "✖ MariaDB no arrancó. Prueba: mariadbd-safe &"; exit 1; }
+mariadb-admin ping --silent > /dev/null 2>/dev/null || { echo "✖ MariaDB no arrancó. Prueba: mariadbd-safe &"; exit 1; }
 printf '\033[1;32m✔ MariaDB en marcha\033[0m\n'
 
 cat <<'EOF'

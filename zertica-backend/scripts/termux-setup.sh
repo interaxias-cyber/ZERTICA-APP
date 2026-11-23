@@ -53,23 +53,39 @@ DATADIR="$PREFIX/var/lib/mysql"
 if [ ! -d "$DATADIR/mysql" ]; then
   mariadb-install-db --datadir="$DATADIR" > /dev/null
 fi
-if ! mariadb-admin ping --silent 2>/dev/null; then
+if ! mariadb-admin ping --silent > /dev/null 2>/dev/null; then
   (mariadbd-safe --datadir="$DATADIR" > /dev/null 2>&1 &)
   for i in $(seq 1 30); do
-    mariadb-admin ping --silent 2>/dev/null && break
+    mariadb-admin ping --silent > /dev/null 2>/dev/null && break
     sleep 1
   done
 fi
-mariadb-admin ping --silent || { echo "MariaDB no arrancó."; exit 1; }
+mariadb-admin ping --silent > /dev/null || { echo "MariaDB no arrancó."; exit 1; }
 
-# En Termux el usuario del sistema es administrador de MariaDB (sin contraseña).
-mariadb -e "
+# mariadb-install-db crea como administradores (autenticación por socket) al
+# usuario de Termux y a root. Se busca cuál puede crear usuarios.
+ADMIN_USER=""
+for u in "$(whoami)" root "$USER"; do
+  [ -z "$u" ] && continue
+  if mariadb -u "$u" -N -e "SELECT 1 FROM mysql.user LIMIT 1" > /dev/null 2>&1; then
+    ADMIN_USER="$u"
+    break
+  fi
+done
+if [ -z "$ADMIN_USER" ]; then
+  echo "✖ No se encontró un usuario administrador de MariaDB."
+  echo "  Envía una captura de: mariadb -u \"$(whoami)\" -e 'SELECT CURRENT_USER()'"
+  exit 1
+fi
+mariadb -u "$ADMIN_USER" -e "
   CREATE USER IF NOT EXISTS 'zertica'@'localhost' IDENTIFIED BY '$DB_PASS';
   CREATE USER IF NOT EXISTS 'zertica'@'127.0.0.1' IDENTIFIED BY '$DB_PASS';
+  ALTER USER 'zertica'@'localhost' IDENTIFIED BY '$DB_PASS';
+  ALTER USER 'zertica'@'127.0.0.1' IDENTIFIED BY '$DB_PASS';
   GRANT ALL PRIVILEGES ON *.* TO 'zertica'@'localhost';
   GRANT ALL PRIVILEGES ON *.* TO 'zertica'@'127.0.0.1';
   FLUSH PRIVILEGES;"
-DB_SOCKET="$(mariadb -N -e 'SELECT @@socket' 2>/dev/null)"
+DB_SOCKET="$(mariadb -u "$ADMIN_USER" -N -e 'SELECT @@socket' 2>/dev/null)"
 ok "MariaDB lista (usuario zertica, socket $DB_SOCKET)"
 
 paso "5/6 Instalando dependencias del backend (bcrypt se compila: 2–5 minutos)"
@@ -102,7 +118,7 @@ EOF
 fi
 
 paso "6/6 Creando la base de datos con los datos de prueba"
-if mariadb -e "USE zertica; SELECT 1 FROM users LIMIT 1;" > /dev/null 2>&1; then
+if mariadb -u zertica -p"$DB_PASS" -e "USE zertica; SELECT 1 FROM users LIMIT 1;" > /dev/null 2>&1; then
   ok "La base ya existe: se conservan tus datos (para reiniciarla: zertica-reset)"
 else
   npm run db:init
