@@ -59,7 +59,8 @@ La app consume una API REST propia (Node.js + Express) conectada a MySQL/MariaDB
 | 14:39 | **Commit 9:** comando `zertica-db-demo` – recorrido guiado de la BD para la exposición. | Funcionó en el celular. |
 | 14:59 | **Commit 10:** `zertica` detecta si el backend ya está encendido (evita `EADDRINUSE`). | — |
 | 15:16 | **Commit 11:** `zertica-stop` apaga backend, MariaDB y wake-lock (ahorro de batería y RAM). | — |
-| — | Esta bitácora. | — |
+| — | Bitácora del proyecto (este documento, en Markdown y Word). | — |
+| — | **Commit 13:** `zertica-db-demo` cuenta las filas con `COUNT(*)` y la sección de usuarios muestra nombre, correo, contraseña de prueba, empresa y estado. | Los usuarios nuevos aparecen al instante. |
 
 ---
 
@@ -252,6 +253,7 @@ Formato de error uniforme: `{ "error": { "code", "message", "details" } }`.
 | `bash setup.sh` | Instalación única: Node, MariaDB, Git, proyecto, BD y alias. |
 | `zertica` | Enciende MariaDB + backend (con wake-lock). |
 | `zertica-db-demo` | Recorrido guiado de la base de datos. |
+| `zertica-db-demo usuarios` | Solo la lista de usuarios (administradores, empresas y clientes) con correo y contraseña de prueba. |
 | `zertica-db` | Consola SQL libre. |
 | `zertica-reset` | Reinicia la BD con los datos de prueba. |
 | `zertica-stop` | Apaga backend, MariaDB y libera el wake-lock. |
@@ -287,6 +289,7 @@ Base de datos en Termux: usuario `zertica`, contraseña `Zertica2026`.
 | 10 | `EADDRINUSE :3000` | Backend ya encendido en otra sesión | `zertica` lo detecta y avisa. |
 | 11 | Tildes mal mostradas en la demo de BD | Juego de caracteres | `--default-character-set=utf8mb4`. |
 | 12 | Consumo de batería con Termux | Wake-lock y servicios activos | Comando `zertica-stop`. |
+| 13 | Se agregó un usuario y el conteo de la tabla `users` no cambiaba en la demo | `TABLE_ROWS` de InnoDB es una estimación que no se actualiza al instante | Conteo exacto con `COUNT(*)` en `zertica-db-demo`. |
 
 ### Lecciones aprendidas
 
@@ -311,7 +314,7 @@ Base de datos en Termux: usuario `zertica`, contraseña `Zertica2026`.
 | Requerimientos funcionales / no funcionales | 45 / 16 |
 | Casos de uso | 27 + 12 |
 | Reglas de negocio | 28 |
-| Commits | 11 |
+| Commits | 13 |
 
 ---
 
