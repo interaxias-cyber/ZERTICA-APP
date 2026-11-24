@@ -1,7 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
-const bcrypt = require('bcrypt');
+const bcrypt = require('../utils/bcrypt');
 const jwt = require('jsonwebtoken');
 const env = require('../config/env');
 const ApiError = require('../utils/ApiError');

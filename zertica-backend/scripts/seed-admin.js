@@ -5,7 +5,7 @@
  * Uso: npm run seed:admin -- <usuario> <correo> <contraseña> ["Nombre completo"]
  */
 require('dotenv').config();
-const bcrypt = require('bcrypt');
+const bcrypt = require('../src/utils/bcrypt');
 const mysql = require('mysql2/promise');
 
 async function main() {
