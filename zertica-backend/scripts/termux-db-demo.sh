@@ -24,7 +24,8 @@ fi
 if mostrar tablas; then
   titulo "1. Tablas de la base 'zertica' (14)"
   nota "5 tablas del MVP + 9 de la ampliación v2."
-  sql "SELECT TABLE_NAME AS tabla, TABLE_ROWS AS filas_aprox, TABLE_COMMENT AS comentario FROM information_schema.TABLES WHERE TABLE_SCHEMA='zertica' ORDER BY TABLE_NAME;"
+  nota "Conteo exacto con COUNT(*): se actualiza en cuanto se agrega un registro."
+  sql "SELECT 'addresses' AS tabla, COUNT(*) AS filas FROM addresses UNION ALL SELECT 'brands' AS tabla, COUNT(*) AS filas FROM brands UNION ALL SELECT 'cart_items' AS tabla, COUNT(*) AS filas FROM cart_items UNION ALL SELECT 'categories' AS tabla, COUNT(*) AS filas FROM categories UNION ALL SELECT 'companies' AS tabla, COUNT(*) AS filas FROM companies UNION ALL SELECT 'account_contacts' AS tabla, COUNT(*) AS filas FROM account_contacts UNION ALL SELECT 'invoices' AS tabla, COUNT(*) AS filas FROM invoices UNION ALL SELECT 'order_items' AS tabla, COUNT(*) AS filas FROM order_items UNION ALL SELECT 'orders' AS tabla, COUNT(*) AS filas FROM orders UNION ALL SELECT 'payment_methods' AS tabla, COUNT(*) AS filas FROM payment_methods UNION ALL SELECT 'product_features' AS tabla, COUNT(*) AS filas FROM product_features UNION ALL SELECT 'products' AS tabla, COUNT(*) AS filas FROM products UNION ALL SELECT 'support_messages' AS tabla, COUNT(*) AS filas FROM support_messages UNION ALL SELECT 'users' AS tabla, COUNT(*) AS filas FROM users;"
   pausa
 fi
 
@@ -45,8 +46,14 @@ if mostrar catalogo; then
 fi
 
 if mostrar usuarios; then
-  titulo "4. Usuarios y roles (la contraseña solo se guarda como hash bcrypt)"
-  sql "SELECT id, username AS usuario, full_name AS nombre, email AS correo, role AS rol, IF(is_active,'Activo','Inactivo') AS estado, CONCAT(LEFT(password_hash,20),'…') AS hash_bcrypt FROM users ORDER BY role, username;"
+  titulo "4. Usuarios: administradores, clientes y empresas"
+  nota "La base NO guarda contraseñas, solo su hash bcrypt (irreversible)."
+  nota "Las contraseñas de prueba se reconocen comparando el hash; las nuevas aparecen como cifradas."
+  sql "SELECT u.id, CASE u.role WHEN 'admin' THEN 'Administrador' WHEN 'company' THEN 'Empresa' ELSE 'Cliente' END AS tipo, u.username AS usuario, u.full_name AS nombre, u.email AS correo, CASE u.password_hash WHEN '\$2b\$10\$oBIu//ZDdG0L3Hk1jT1Zs.IUM.9VXEoC5K9obGmm54G8DSj4YR1vy' THEN 'Admin2026#' WHEN '\$2b\$10\$7R5fPGxxGbLlI5M3zACnwecazJRox71Pb2f86piThjHIG86A6x0r.' THEN 'Usuario2026#' WHEN '\$2b\$10\$9rTOuZnAJZLf8VGY5Ayh7.Qx9hrFEPRYjsjmsgPrSkrm94IDnDIUy' THEN 'Inactivo2026#' WHEN '\$2b\$10\$PyP6L2hutMidEyKgnYpMr.OiWTnoaMlUTS.ZbHWOcVcyi1nhlhMgS' THEN 'Empresa2026#' ELSE '(cifrada: la eligió el usuario)' END AS contrasena, IFNULL(c.name,'-') AS empresa, IF(u.is_active,'Activo','Inactivo') AS estado, DATE_FORMAT(u.created_at,'%Y-%m-%d %H:%i') AS creado FROM users u LEFT JOIN companies c ON c.id=u.company_id ORDER BY FIELD(u.role,'admin','company','user'), u.id;"
+  titulo "Cómo se guarda realmente la contraseña (columna password_hash)"
+  sql "SELECT username AS usuario, CONCAT(LEFT(password_hash,29),'…') AS hash_bcrypt FROM users ORDER BY id;"
+  titulo "Empresas registradas"
+  sql "SELECT c.name AS empresa, c.legal_name AS razon_social, c.email AS correo, c.phone AS telefono, c.tier AS nivel, (SELECT COUNT(*) FROM users x WHERE x.company_id=c.id) AS usuarios FROM companies c ORDER BY c.id;"
   pausa
 fi
 
