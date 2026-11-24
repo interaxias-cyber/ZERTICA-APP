@@ -129,6 +129,8 @@ RC="$HOME/.bashrc"
 touch "$RC"
 grep -q "alias zertica=" "$RC" || echo "alias zertica='bash $BACKEND/scripts/termux-start.sh'" >> "$RC"
 grep -q "alias zertica-reset=" "$RC" || echo "alias zertica-reset='cd $BACKEND && npm run db:init; cd ~'" >> "$RC"
+grep -q "alias zertica-db=" "$RC" || echo "alias zertica-db='mariadb -u zertica -p$DB_PASS zertica --default-character-set=utf8mb4'" >> "$RC"
+grep -q "alias zertica-db-demo=" "$RC" || echo "alias zertica-db-demo='bash $BACKEND/scripts/termux-db-demo.sh'" >> "$RC"
 
 cat <<'EOF'
 
